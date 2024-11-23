@@ -1,0 +1,13 @@
+icons_launcher:
+  image_path: "assets/icon/play_store_512.png"
+  platforms:
+    android:
+      enable: true
+      # image_path: "assets/icon/play_store_512.png"
+      # notification_image: "assets/icon/play_store_512.png"
+      # # adaptive_background_color: '#ffffff'
+      # adaptive_background_image: "assets/icon/play_store_512.png"
+      # adaptive_foreground_image: "assets/icon/play_store_512.png"
+      # adaptive_round_image: "assets/icon/play_store_512.png"
+      # adaptive_monochrome_image: "assets/icon/play_store_512.png"
+# https://icon.kitchen/i/H4sIAAAAAAAAAx2NPQ7CMBSD72LWDh2ha48AG0IoaV7SiNe8kp8yVL07SRdbsq3POzbFhRKGHUbFz2OmhTBYxYk6WDeyX1XMrU5UDVIy%2B0AGHfwkoSa0UcjvIJlwdNDuPqu1IpC%2BxceJqS61G4Ul1vBi7e3a9225iCncnp9QwUTxJ1NS1R9pvI4%2FR54CBZwAAAA%3D

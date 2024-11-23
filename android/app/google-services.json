@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "297346349577",
+    "project_id": "ukalender-3baef",
+    "storage_bucket": "ukalender-3baef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:297346349577:android:6940d40613d38b83c456d8",
+        "android_client_info": {
+          "package_name": "de.fludev.ukalender"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQz6Vj75p3CJ11K09Asb79OZ_EQmtqSvw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
