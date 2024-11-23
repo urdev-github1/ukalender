@@ -32,12 +32,6 @@ EventSqflite eventFromMap(Map<String, dynamic> map) {
 }
 
 
-
-
-
-
-
-
 // *** alt ***
 
 
