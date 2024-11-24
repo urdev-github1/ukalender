@@ -1,6 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:ukalender/models/event_sqflite.dart';
 import 'package:ukalender/screens/notification_screen.dart';
+import 'package:ukalender/utils/database_helper.dart';
 import '../widgets/show_events_for_day.dart';
 import '../models/event_firestore.dart';
 import '../screens/event_list_screen.dart';
@@ -115,6 +121,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
         MaterialPageRoute(builder: (context) => const NotificationScreen()));
   }
 
+  // Sqflite -> JSON
+  Future<void> _exportDataAsJson() async {
+    const dbPath = '/data/data/de.fludev.ukalender/databases/events.db';
+    final db = await openDatabase(dbPath);
+
+    final data = await db.rawQuery('SELECT * FROM events'); // Tabelle anpassen
+    final exportDir = await getExternalStorageDirectory();
+    final file = File('${exportDir!.path}/events.json');
+
+    await file.writeAsString(data.toString());
+    print('Data exported to: ${file.path}');
+  }
+
   // Widget erstellen
   @override
   Widget build(BuildContext context) {
@@ -123,6 +142,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
         title: const Text('Kalender'),
         backgroundColor: Colors.orange,
         actions: <Widget>[
+          // Datenbank auslesen
+          IconButton(
+            icon: const Icon(Icons.import_export, color: Colors.white),
+            onPressed: _exportDataAsJson,
+          ),
           // Notification auslesen
           IconButton(
             icon: const Icon(Icons.notifications_active_outlined,

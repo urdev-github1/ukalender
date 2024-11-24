@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:ukalender/models/event_firestore.dart';
+import '../models/event_firestore.dart';
+import '../models/event_sqflite.dart';
+import '../utils/database_helper.dart';
 
 /// Verbindung nach Cloud Firestore und Daten speichern
 class EventStorage {
@@ -29,8 +31,7 @@ class EventStorage {
       );
 
       // Extrahiere nur die Uhrzeit aus eventTime
-      String localTime = '${eventDateTime.hour}:${eventDateTime.minute}';
-      localTime = DateFormat('HH:mm').format(eventDateTime);
+      String localTime = DateFormat('HH:mm').format(eventDateTime);
 
       // Zum Dokument zugehörige Felder.
       final eventData = {
@@ -49,7 +50,24 @@ class EventStorage {
       };
 
       // Speichern der Daten in Cloud Firestore
-      await _eventsCollection.add(eventData);
+      DocumentReference docRef = await _eventsCollection.add(eventData);
+      String eventId = docRef.id;
+
+      // Speichern der Daten in SQLite
+      EventSqflite eventSqflite = EventSqflite(
+        id: eventId,
+        title: title,
+        body: body,
+        eventTime: eventTimeAtMidnight.toIso8601String(),
+        localTime: localTime,
+        dayBefore: dayBefore?.toIso8601String() ?? '',
+        notificationIds:
+            EventSqflite.notificationIdsToJson(notificationIds ?? []),
+        thirtyMinutesBefore: thirtyMinutesBefore?.toIso8601String() ?? '',
+        twoHoursBefore: twoHoursBefore?.toIso8601String() ?? '',
+      );
+      await DatabaseHelper.instance.insertEvent(eventSqflite);
+
       print("Event erfolgreich gespeichert!");
     } catch (e) {
       print("Fehler beim Speichern des Events: $e");
@@ -83,10 +101,6 @@ class EventStorage {
     for (var doc in snapshot.docs) {
       final data = doc.data() as Map<String, dynamic>;
 
-      // data['eventTime'] <- Zugriff auf den Value über den Schlüssel 'eventTime' in der data-Map.
-      // Parsed den Value-String in ein DateTime-Objekt (z.B. "2023-11-12T19:00:00Z")
-      //final DateTime eventTime = DateTime.parse(data['eventTime']);
-
       // Datum ohne die Uhrzeit als Schlüssel verwenden.
       final DateTime eventDate =
           DateTime.parse(data['eventTime']); //.toLocal();
@@ -117,10 +131,45 @@ class EventStorage {
     return eventsFromFirestore;
   }
 
+  // *** AUSLESEN III für die Verarbeitung in einer Map aus SQLite ***
+  // -> Wird in 'calendar_screen.dart' weiterverarbeitet.
+
+  // Methode, um Events in die Map 'eventsFromSqflite' zu laden und an
+  // 'loadEventsFromSqflite' zurückzugeben.
+  Future<Map<DateTime, List<EventSqflite>>> loadEventsFromSqflite() async {
+    // Lokale Map für die Event-Daten aus SQLite definieren.
+    final Map<DateTime, List<EventSqflite>> eventsFromSqflite = {};
+    // Gibt alle Dokumente der SQLite Datenbank zurück.
+    final events = await DatabaseHelper.instance.queryAllEvents();
+
+    // Leere _events-Map initialisieren
+    eventsFromSqflite.clear();
+
+    // Für jedes Dokument in der Collection
+    for (var event in events) {
+      // Datum ohne die Uhrzeit als Schlüssel verwenden.
+      final DateTime eventDate = DateTime.parse(event.eventTime);
+
+      // Event zur Map hinzufügen, wenn es für das gegebene Datum schon Einträge gibt
+      if (eventsFromSqflite.containsKey(eventDate)) {
+        eventsFromSqflite[eventDate]!.add(event);
+      } else {
+        // Wenn nicht wird ein neuer Eintrag in der Map erstellt
+        eventsFromSqflite[eventDate] = [event];
+      }
+    }
+    // Das Ergebnis wird in 'loadEventsFromSqflite' geschieben.
+    return eventsFromSqflite;
+  }
+
   // *** LÖSCHEN ***
 
   // Einzelnes Event wieder löschen.
   Future<void> deleteEvent(String eventId) async {
+    // Löschen in Firestore
     await _eventsCollection.doc(eventId).delete();
+
+    // Löschen in SQLite
+    await DatabaseHelper.instance.deleteEvent(eventId);
   }
 }
