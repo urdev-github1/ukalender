@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:ukalender/models/event_sqflite.dart';
-import 'package:ukalender/screens/notification_screen.dart';
-import 'package:ukalender/utils/database_helper.dart';
+import '../screens/notification_screen.dart';
+import '../utils/event_storage_firestore.dart';
 import '../widgets/show_events_for_day.dart';
 import '../models/event_firestore.dart';
 import '../screens/event_list_screen.dart';
-import '../utils/event_storage.dart';
 import '../widgets/add_event_dialog.dart';
 
 /// Klasse zum Aufbau der Bedienoberfläche
@@ -53,7 +51,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   // Lädt alle Events aus der Firestore-Datenbank und speichert sie in einer Map.
   Future<void> _loadAllEvents() async {
     // events enthält alle Termine, die aus Firestore geladen wurden.
-    final events = await EventStorage().loadEventsFromFirestore();
+    final events = await EventStorageFirestore().loadEventsFromFirestore();
     setState(() {
       // Die Map aus 'loadEventsFromFirestore' einlesen.
       _events = events;

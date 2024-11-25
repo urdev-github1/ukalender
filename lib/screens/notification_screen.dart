@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:ukalender/utils/event_storage_firestore.dart';
 import '../utils/notification_service.dart';
-import '../utils/event_storage.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -62,8 +62,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Instanz von EventStorage
-    final eventStorage = EventStorage();
+    // Instanz von EventStorageFirestore
+    final eventStorage = EventStorageFirestore();
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 128, 166, 175),

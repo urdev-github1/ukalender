@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import '../utils/event_storage.dart';
+import '../utils/event_storage_firestore.dart';
 
 /// Alle Events als Kachel untereinander in zeitlich aufsteigender Reihenfolge
 class EventListScreen extends StatefulWidget {
@@ -17,8 +17,8 @@ class _EventListScreenState extends State<EventListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Instanz von EventStorage
-    final eventStorage = EventStorage();
+    // Instanz von EventStorageFirestore
+    final eventStorage = EventStorageFirestore();
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
