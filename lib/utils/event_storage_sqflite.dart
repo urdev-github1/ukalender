@@ -7,7 +7,7 @@ import '../utils/database_helper.dart';
 class EventStorageSqflite {
   //
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
-  final Uuid _uuid = Uuid();
+  final Uuid _uuid = const Uuid();
 
   // *** SPEICHERN ***
 
