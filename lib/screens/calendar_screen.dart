@@ -120,30 +120,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
         MaterialPageRoute(builder: (context) => const NotificationScreen()));
   }
 
-  // Sqflite -> JSON
-  Future<void> _exportDataAsJson() async {
-    const dbPath = '/data/data/de.fludev.ukalender/databases/events.db';
-    final db = await openDatabase(dbPath);
+  // VORBEREITET: Sqflite -> JSON
+  // Future<void> _exportDataAsJson() async {
+  //   const dbPath = '/data/data/de.fludev.ukalender/databases/events.db';
+  //   final db = await openDatabase(dbPath);
 
-    final data = await db.rawQuery('SELECT * FROM events'); // Tabelle anpassen
-    final exportDir = await getExternalStorageDirectory();
-    final file = File('${exportDir!.path}/events.json');
+  //   final data = await db.rawQuery('SELECT * FROM events'); // Tabelle anpassen
+  //   final exportDir = await getExternalStorageDirectory();
+  //   final file = File('${exportDir!.path}/events.json');
 
-    await file.writeAsString(data.toString());
-    print('Data exported to: ${file.path}');
-  }
+  //   await file.writeAsString(data.toString());
+  //   print('Data exported to: ${file.path}');
+  // }
 
+  // Kopieren der events.db in das Downloadverzeichnis.
   Future<void> _copyDatabaseToDownloads() async {
     try {
       // Berechtigung anfordern
       if (await Permission.storage.request().isGranted) {
         // Zugriff auf das interne Verzeichnis der App
-        final appDir = await getApplicationDocumentsDirectory();
-        final dbPath = File('${appDir.path}/event.db');
+        //final appDir = await getApplicationDocumentsDirectory();
+        // final dbPath = File('${appDir.path}/events.db');
+        final dbPath =
+            File('/data/data/de.fludev.ukalender/databases/events.db');
 
         // Prüfen, ob die Datenbank existiert
         if (!await dbPath.exists()) {
-          throw Exception("Datenbankdatei event.db nicht gefunden.");
+          throw Exception("Datenbankdatei events.db nicht gefunden.");
         }
 
         // Zugriff auf das Download-Verzeichnis
@@ -153,7 +156,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         }
 
         // Datei kopieren
-        final destinationPath = '${downloadDir.path}/event.db';
+        final destinationPath = '${downloadDir.path}/events.db';
         await dbPath.copy(destinationPath);
 
         debugPrint('Datenbank erfolgreich nach $destinationPath kopiert.');
@@ -175,7 +178,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         actions: <Widget>[
           // Datenbank auslesen
           IconButton(
-            icon: const Icon(Icons.import_export, color: Colors.white),
+            icon: const Icon(Icons.copy, color: Colors.white),
             onPressed: _copyDatabaseToDownloads,
           ),
           // Notification auslesen
