@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:ukalender/models/event_sqflite.dart';
+import 'package:ukalender/utils/database_helper.dart';
 import '../screens/notification_screen.dart';
 import '../utils/event_storage_firestore.dart';
 import '../widgets/show_events_for_day.dart';
@@ -168,6 +171,42 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
+  // Firestore Datenbank export
+  Future<void> _exportFirestoreToSqflite() async {
+    // Referenz zur Firestore-Sammlung
+    CollectionReference eventsCollection =
+        FirebaseFirestore.instance.collection('events');
+
+    try {
+      // Abrufen der Dokumente aus Firestore
+      QuerySnapshot querySnapshot = await eventsCollection.get();
+
+      // Iteration durch die Dokumente
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        // Firestore-Daten in ein EventSqflite-Objekt transformieren
+        EventSqflite event = EventSqflite(
+          id: doc.id, // Dokument-ID als Event-ID verwenden
+          title: doc['title'],
+          body: doc['body'],
+          eventTime: doc['eventTime'],
+          localTime: doc['localTime'],
+          dayBefore: doc['dayBefore'],
+          notificationIds: EventSqflite.notificationIdsToJson(
+              List<int>.from(doc['notificationIds'])),
+          thirtyMinutesBefore: doc['thirtyMinutesBefore'],
+          twoHoursBefore: doc['twoHoursBefore'],
+        );
+
+        // Event in die lokale SQLite-Datenbank einfügen
+        await DatabaseHelper.instance.insertEvent(event);
+      }
+
+      print('Daten erfolgreich aus Firestore exportiert.');
+    } catch (e) {
+      print('Fehler beim Exportieren der Daten: $e');
+    }
+  }
+
   // Widget erstellen
   @override
   Widget build(BuildContext context) {
@@ -176,9 +215,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
         title: const Text('Kalender'),
         backgroundColor: Colors.orange,
         actions: <Widget>[
-          // Datenbank auslesen
+          // Firestore Datenbank export
           IconButton(
-            icon: const Icon(Icons.copy, color: Colors.white),
+            icon: const Icon(Icons.get_app, color: Colors.white),
+            onPressed: _exportFirestoreToSqflite,
+          ),
+          // Datenbank in den Smartphone-Ordner Download kopieren
+          IconButton(
+            icon: const Icon(Icons.file_copy, color: Colors.white),
             onPressed: _copyDatabaseToDownloads,
           ),
           // Notification auslesen
