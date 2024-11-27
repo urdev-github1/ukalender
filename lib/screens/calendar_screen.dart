@@ -2,9 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:ukalender/models/event_sqflite.dart';
 import 'package:ukalender/utils/database_helper.dart';
