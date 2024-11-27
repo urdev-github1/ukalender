@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../screens/notification_screen.dart';
@@ -132,6 +133,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
     print('Data exported to: ${file.path}');
   }
 
+  Future<void> _copyDatabaseToDownloads() async {
+    try {
+      // Berechtigung anfordern
+      if (await Permission.storage.request().isGranted) {
+        // Zugriff auf das interne Verzeichnis der App
+        final appDir = await getApplicationDocumentsDirectory();
+        final dbPath = File('${appDir.path}/event.db');
+
+        // Prüfen, ob die Datenbank existiert
+        if (!await dbPath.exists()) {
+          throw Exception("Datenbankdatei event.db nicht gefunden.");
+        }
+
+        // Zugriff auf das Download-Verzeichnis
+        final downloadDir = Directory('/storage/emulated/0/Download');
+        if (!await downloadDir.exists()) {
+          throw Exception("Download-Verzeichnis nicht gefunden.");
+        }
+
+        // Datei kopieren
+        final destinationPath = '${downloadDir.path}/event.db';
+        await dbPath.copy(destinationPath);
+
+        debugPrint('Datenbank erfolgreich nach $destinationPath kopiert.');
+      } else {
+        throw Exception("Speicherzugriff verweigert.");
+      }
+    } catch (e) {
+      debugPrint('Fehler beim Kopieren der Datenbank: $e');
+    }
+  }
+
   // Widget erstellen
   @override
   Widget build(BuildContext context) {
@@ -143,7 +176,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           // Datenbank auslesen
           IconButton(
             icon: const Icon(Icons.import_export, color: Colors.white),
-            onPressed: _exportDataAsJson,
+            onPressed: _copyDatabaseToDownloads,
           ),
           // Notification auslesen
           IconButton(
