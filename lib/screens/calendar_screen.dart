@@ -28,7 +28,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
   final CalendarFormat _calendarFormat = CalendarFormat.month;
 
   // Speichert die Ereignisse, die an einem bestimmten Tag stattfinden
-  late Map<DateTime, List<EventFirestore>> _events;
+  //late Map<DateTime, List<EventFirestore>> _events;
+  late Map<DateTime, List<EventSqflite>> _events;
+
   // Speichert den aktuell ausgewählten Tag
   late DateTime _selectedDay;
   // Speichert den aktuell fokussierten Tag
@@ -50,22 +52,54 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _loadAllEvents();
   }
 
-  // Lädt alle Events aus der Firestore-Datenbank und speichert sie in einer Map.
+// Lädt alle Events aus der Sqflite-Datenbank und speichert sie in einer Map.
   Future<void> _loadAllEvents() async {
-    // events enthält alle Termine, die aus Firestore geladen wurden.
-    final events = await EventStorageFirestore().loadEventsFromFirestore();
+    // Abrufen aller Events aus der Datenbank
+    final List<EventSqflite> events =
+        await DatabaseHelper.instance.queryAllEvents();
+
     setState(() {
-      // Die Map aus 'loadEventsFromFirestore' einlesen.
-      _events = events;
+      // Konvertieren der Event-Liste in eine Map mit Datum als Schlüssel
+      _events = {};
+      for (var event in events) {
+        final eventDate =
+            DateTime.parse(event.eventTime); // ISO-8601 String zu DateTime
+        final localDate =
+            DateTime(eventDate.year, eventDate.month, eventDate.day);
+
+        // Liste der Events für den Tag initialisieren, falls nicht vorhanden
+        if (_events[localDate] == null) {
+          _events[localDate] = [];
+        }
+
+        // Event zur Liste hinzufügen
+        _events[localDate]!.add(event);
+      }
     });
   }
 
-  // Gibt die Events des angewählten Tages zurück.
-  List<EventFirestore> _getEventsForDay(DateTime day) {
-    //print("Liste aller Events für $day - Ergebnis: ${_events[day]}");
-    // Konvertieren des UTC-Datums in das lokales Datum
+  // // Lädt alle Events aus der Firestore-Datenbank und speichert sie in einer Map.
+  // Future<void> _loadAllEvents() async {
+  //   // events enthält alle Termine, die aus Firestore geladen wurden.
+  //   final events = await EventStorageFirestore().loadEventsFromFirestore();
+  //   setState(() {
+  //     // Die Map aus 'loadEventsFromFirestore' einlesen.
+  //     _events = events;
+  //   });
+  // }
+
+  // // Gibt die Events des angewählten Tages zurück.
+  // List<EventFirestore> _getEventsForDay(DateTime day) {
+  //   //print("Liste aller Events für $day - Ergebnis: ${_events[day]}");
+  //   // Konvertieren des UTC-Datums in das lokales Datum
+  //   final localDay = DateTime(day.year, day.month, day.day);
+  //   // Die Daten in _events werden über die Methode _loadAllEvents eingelesen.
+  //   return _events[localDay] ?? [];
+  // }
+
+  List<EventSqflite> _getEventsForDay(DateTime day) {
+    // Datum normalisieren (nur Jahr, Monat und Tag)
     final localDay = DateTime(day.year, day.month, day.day);
-    // Die Daten in _events werden über die Methode _loadAllEvents eingelesen.
     return _events[localDay] ?? [];
   }
 
@@ -85,7 +119,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // Ein Kalendertag wurde dauerhaft angedrückt
   void _onDayLongPressed(DateTime selectedDay, DateTime focusedDay) {
-    List<EventFirestore> eventsForDay = _getEventsForDay(selectedDay);
+    //List<EventFirestore> eventsForDay = _getEventsForDay(selectedDay);
+    List<EventSqflite> eventsForDay = _getEventsForDay(selectedDay);
 
     // Zeige alle Termine für den angeklickten Kalendertag
     showDialog(
