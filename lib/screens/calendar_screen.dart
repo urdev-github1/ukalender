@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:ukalender/models/event_sqflite.dart';
 import 'package:ukalender/utils/database_helper.dart';
@@ -240,6 +241,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
+  Future<void> _deleteSqfliteDatabase() async {
+    // Pfad zur Datenbankdatei abrufen
+    String path = '/data/data/de.fludev.ukalender/databases/events.db';
+
+    // Datenbank löschen
+    await deleteDatabase(path);
+
+    // Optional: Rückmeldung für den Benutzer
+    print('Die Datenbank events.db wurde gelöscht.');
+  }
+
   // Widget erstellen
   @override
   Widget build(BuildContext context) {
@@ -248,6 +260,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
         title: const Text('Kalender'),
         backgroundColor: Colors.orange,
         actions: <Widget>[
+          // Lokale DB löschen
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.white),
+            onPressed: _deleteSqfliteDatabase,
+          ),
           // Firestore Datenbank export
           IconButton(
             icon: const Icon(Icons.get_app, color: Colors.white),
