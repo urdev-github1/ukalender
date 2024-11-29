@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:ukalender/models/event_sqflite.dart';
@@ -26,15 +29,41 @@ class DatabaseHelper {
 
   // Methode zur Initialisierung der Datenbank
   Future<Database> _initDatabase() async {
+    // Zugriff auf das externe Speicherverzeichnis
+    // (storage/emulated/0/Android/data/de.fludev.ukalender/files)
+    Directory? directory = await getExternalStorageDirectory();
+    print(directory?.path);
+
+    if (directory == null) {
+      throw Exception('Externer Speicher ist nicht verfügbar.');
+    }
+
+    // Sicherstellen, dass das Verzeichnis existiert
+    if (!await directory.exists()) {
+      await directory.create(recursive: true);
+    }
+
     // Pfad zur Datenbankdatei
-    String path = join(await getDatabasesPath(), 'events.db');
-    // Datenbank öffnen bzw. erstellen, falls sie noch nicht existiert
+    String path = join(directory.path, 'events.db');
+
+    // Öffnen oder Erstellen der Datenbank
     return await openDatabase(
       path,
       version: 1,
       onCreate: _onCreate,
     );
   }
+
+  // Future<Database> _initDatabase() async {
+  //   // Pfad zur Datenbankdatei
+  //   String path = join(await getDatabasesPath(), 'events.db');
+  //   // Datenbank öffnen bzw. erstellen, falls sie noch nicht existiert
+  //   return await openDatabase(
+  //     path,
+  //     version: 1,
+  //     onCreate: _onCreate,
+  //   );
+  // }
 
   // Methode zur Erstellung der Datenbanktabelle
   // (Wird aufgerufen, wenn die Datenbank zum ersten Mal erstellt wird.)

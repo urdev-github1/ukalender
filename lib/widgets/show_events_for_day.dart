@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ukalender/models/event_firestore.dart';
+//import 'package:ukalender/models/event_firestore.dart';
 import 'package:ukalender/models/event_sqflite.dart';
 import 'package:intl/intl.dart'; // Zum Formatieren des Datums
 

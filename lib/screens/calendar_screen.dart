@@ -8,9 +8,9 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:ukalender/models/event_sqflite.dart';
 import 'package:ukalender/utils/database_helper.dart';
 import '../screens/notification_screen.dart';
-import '../utils/event_storage_firestore.dart';
+//import '../utils/event_storage_firestore.dart';
 import '../widgets/show_events_for_day.dart';
-import '../models/event_firestore.dart';
+//import '../models/event_firestore.dart';
 import '../screens/event_list_screen.dart';
 import '../widgets/add_event_dialog.dart';
 
@@ -49,12 +49,48 @@ class _CalendarScreenState extends State<CalendarScreen> {
     // bevor sie benutzt werden kann.
     _events = {};
 
-    // Lade alle Events beim App-Neustart aus der Firestore-Datenbank
-    _loadAllEvents();
+    // // Lade alle Events beim App-Neustart aus der Firestore-Datenbank
+    // _loadAllEvents();
+
+    //
+    _initializeApp();
   }
 
-// Lädt alle Events aus der Sqflite-Datenbank und speichert sie in einer Map.
+  Future<void> _initializeApp() async {
+    // Berechtigungen prüfen und anfordern
+    if (!await _requestStoragePermission()) {
+      print(
+          'Speicherberechtigung nicht erteilt. Die App kann nicht fortfahren.');
+      return;
+    }
+
+    // Lade die Events nach erfolgreicher Berechtigungsprüfung
+    await _loadAllEvents();
+  }
+
+  Future<bool> _requestStoragePermission() async {
+    // Prüfen, ob Berechtigung bereits erteilt wurde
+    var status = await Permission.storage.status;
+    if (status.isGranted) {
+      return true;
+    }
+
+    // Berechtigung anfordern
+    status = await Permission.storage.request();
+    return status.isGranted;
+  }
+
+  // Lädt alle Events aus der Sqflite-Datenbank und speichert sie in einer Map.
   Future<void> _loadAllEvents() async {
+    // Zugriff auf die Datenbankinstanz, damit sie bei Bedarf erstellt wird
+    final db = await DatabaseHelper.instance.database;
+
+    //
+    if (db == null) {
+      print('Fehler: Die Datenbank konnte nicht initialisiert werden.');
+      return;
+    }
+
     // Abrufen aller Events aus der Datenbank
     final List<EventSqflite> events =
         await DatabaseHelper.instance.queryAllEvents();
@@ -77,6 +113,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         _events[localDate]!.add(event);
       }
     });
+    print('Events erfolgreich geladen.');
   }
 
   // // Lädt alle Events aus der Firestore-Datenbank und speichert sie in einer Map.
@@ -170,48 +207,56 @@ class _CalendarScreenState extends State<CalendarScreen> {
   //   print('Data exported to: ${file.path}');
   // }
 
-  // Kopieren der events.db in das Downloadverzeichnis.
-  Future<void> _copyDatabaseToDownloads() async {
-    try {
-      // Berechtigung anfordern
-      if (await Permission.storage.request().isGranted) {
-        // Zugriff auf das interne Verzeichnis der App
-        //final appDir = await getApplicationDocumentsDirectory();
-        // final dbPath = File('${appDir.path}/events.db');
-        final dbPath =
-            File('/data/data/de.fludev.ukalender/databases/events.db');
+  // // Kopieren der events.db in das Downloadverzeichnis.
+  // Future<void> _copyDatabaseToDownloads() async {
+  //   try {
+  //     // Berechtigung anfordern
+  //     if (await Permission.storage.request().isGranted) {
+  //       // Zugriff auf das interne Verzeichnis der App
+  //       //final appDir = await getApplicationDocumentsDirectory();
+  //       // final dbPath = File('${appDir.path}/events.db');
+  //       final dbPath =
+  //           File('/data/data/de.fludev.ukalender/databases/events.db');
 
-        // Prüfen, ob die Datenbank existiert
-        if (!await dbPath.exists()) {
-          throw Exception("Datenbankdatei events.db nicht gefunden.");
-        }
+  //       // Prüfen, ob die Datenbank existiert
+  //       if (!await dbPath.exists()) {
+  //         throw Exception("Datenbankdatei events.db nicht gefunden.");
+  //       }
 
-        // Zugriff auf das Download-Verzeichnis
-        final downloadDir = Directory('/storage/emulated/0/Download');
-        if (!await downloadDir.exists()) {
-          throw Exception("Download-Verzeichnis nicht gefunden.");
-        }
+  //       // Zugriff auf das Download-Verzeichnis
+  //       final downloadDir = Directory('/storage/emulated/0/Download');
+  //       if (!await downloadDir.exists()) {
+  //         throw Exception("Download-Verzeichnis nicht gefunden.");
+  //       }
 
-        // Datei kopieren
-        final destinationPath = '${downloadDir.path}/events.db';
-        await dbPath.copy(destinationPath);
+  //       // Datei kopieren
+  //       final destinationPath = '${downloadDir.path}/events.db';
+  //       await dbPath.copy(destinationPath);
 
-        debugPrint('Datenbank erfolgreich nach $destinationPath kopiert.');
-      } else {
-        throw Exception("Speicherzugriff verweigert.");
-      }
-    } catch (e) {
-      debugPrint('Fehler beim Kopieren der Datenbank: $e');
-    }
-  }
+  //       debugPrint('Datenbank erfolgreich nach $destinationPath kopiert.');
+  //     } else {
+  //       throw Exception("Speicherzugriff verweigert.");
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Fehler beim Kopieren der Datenbank: $e');
+  //   }
+  // }
 
   // Firestore Datenbank export
   Future<void> _exportFirestoreToSqflite() async {
-    // Referenz zur Firestore-Sammlung
-    CollectionReference eventsCollection =
-        FirebaseFirestore.instance.collection('events');
-
     try {
+      // Initialisiere die Datenbank, falls noch nicht geschehen
+      Database? db = await DatabaseHelper.instance.database;
+
+      if (db == null) {
+        print('Fehler: Datenbank konnte nicht initialisiert werden.');
+        return;
+      }
+
+      // Referenz zur Firestore-Sammlung
+      CollectionReference eventsCollection =
+          FirebaseFirestore.instance.collection('events');
+
       // Abrufen der Dokumente aus Firestore
       QuerySnapshot querySnapshot = await eventsCollection.get();
 
@@ -242,14 +287,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Future<void> _deleteSqfliteDatabase() async {
+    // // Pfad zur Datenbankdatei abrufen
+    // String databasesPath = await getDatabasesPath();
+    // String path = join(databasesPath, 'events.db'); // Dynamisch den Datenbankpfad erstellen
+
     // Pfad zur Datenbankdatei abrufen
-    String path = '/data/data/de.fludev.ukalender/databases/events.db';
+    String path =
+        '/storage/emulated/0/Android/data/de.fludev.ukalender/files/events.db';
 
-    // Datenbank löschen
-    await deleteDatabase(path);
-
-    // Optional: Rückmeldung für den Benutzer
-    print('Die Datenbank events.db wurde gelöscht.');
+    // Prüfen, ob die Datenbank existiert
+    if (await File(path).exists()) {
+      // Datenbank löschen
+      await deleteDatabase(path);
+      print('Die Datenbank events.db wurde gelöscht.');
+    } else {
+      // Datenbank existiert nicht
+      print('Die Datenbank events.db wurde nicht gefunden.');
+    }
   }
 
   // Widget erstellen
@@ -270,11 +324,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
             icon: const Icon(Icons.get_app, color: Colors.white),
             onPressed: _exportFirestoreToSqflite,
           ),
-          // Datenbank in den Smartphone-Ordner Download kopieren
-          IconButton(
-            icon: const Icon(Icons.file_copy, color: Colors.white),
-            onPressed: _copyDatabaseToDownloads,
-          ),
+          // // Datenbank in den Smartphone-Ordner Download kopieren
+          // IconButton(
+          //   icon: const Icon(Icons.file_copy, color: Colors.white),
+          //   onPressed: _copyDatabaseToDownloads,
+          // ),
           // Notification auslesen
           IconButton(
             icon: const Icon(Icons.notifications_active_outlined,
