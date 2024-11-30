@@ -45,39 +45,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _selectedDay = DateTime.now();
     _focusedDay = DateTime.now();
 
-    // Leere Map erzeugen. Die variable muss initialisiert werden
+    // Leere Map erzeugen. Die Variable muss initialisiert werden
     // bevor sie benutzt werden kann.
     _events = {};
 
-    // // Lade alle Events beim App-Neustart aus der Firestore-Datenbank
-    // _loadAllEvents();
-
-    //
-    _initializeApp();
-  }
-
-  Future<void> _initializeApp() async {
-    // Berechtigungen prüfen und anfordern
-    if (!await _requestStoragePermission()) {
-      print(
-          'Speicherberechtigung nicht erteilt. Die App kann nicht fortfahren.');
-      return;
-    }
-
-    // Lade die Events nach erfolgreicher Berechtigungsprüfung
-    await _loadAllEvents();
-  }
-
-  Future<bool> _requestStoragePermission() async {
-    // Prüfen, ob Berechtigung bereits erteilt wurde
-    var status = await Permission.storage.status;
-    if (status.isGranted) {
-      return true;
-    }
-
-    // Berechtigung anfordern
-    status = await Permission.storage.request();
-    return status.isGranted;
+    // Lade alle Events beim App-Neustart aus der Firestore-Datenbank
+    _loadAllEvents();
   }
 
   // Lädt alle Events aus der Sqflite-Datenbank und speichert sie in einer Map.
@@ -116,25 +89,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     print('Events erfolgreich geladen.');
   }
 
-  // // Lädt alle Events aus der Firestore-Datenbank und speichert sie in einer Map.
-  // Future<void> _loadAllEvents() async {
-  //   // events enthält alle Termine, die aus Firestore geladen wurden.
-  //   final events = await EventStorageFirestore().loadEventsFromFirestore();
-  //   setState(() {
-  //     // Die Map aus 'loadEventsFromFirestore' einlesen.
-  //     _events = events;
-  //   });
-  // }
-
-  // // Gibt die Events des angewählten Tages zurück.
-  // List<EventFirestore> _getEventsForDay(DateTime day) {
-  //   //print("Liste aller Events für $day - Ergebnis: ${_events[day]}");
-  //   // Konvertieren des UTC-Datums in das lokales Datum
-  //   final localDay = DateTime(day.year, day.month, day.day);
-  //   // Die Daten in _events werden über die Methode _loadAllEvents eingelesen.
-  //   return _events[localDay] ?? [];
-  // }
-
+  //
   List<EventSqflite> _getEventsForDay(DateTime day) {
     // Datum normalisieren (nur Jahr, Monat und Tag)
     final localDay = DateTime(day.year, day.month, day.day);
@@ -207,44 +162,29 @@ class _CalendarScreenState extends State<CalendarScreen> {
   //   print('Data exported to: ${file.path}');
   // }
 
-  // // Kopieren der events.db in das Downloadverzeichnis.
-  // Future<void> _copyDatabaseToDownloads() async {
-  //   try {
-  //     // Berechtigung anfordern
-  //     if (await Permission.storage.request().isGranted) {
-  //       // Zugriff auf das interne Verzeichnis der App
-  //       //final appDir = await getApplicationDocumentsDirectory();
-  //       // final dbPath = File('${appDir.path}/events.db');
-  //       final dbPath =
-  //           File('/data/data/de.fludev.ukalender/databases/events.db');
-
-  //       // Prüfen, ob die Datenbank existiert
-  //       if (!await dbPath.exists()) {
-  //         throw Exception("Datenbankdatei events.db nicht gefunden.");
-  //       }
-
-  //       // Zugriff auf das Download-Verzeichnis
-  //       final downloadDir = Directory('/storage/emulated/0/Download');
-  //       if (!await downloadDir.exists()) {
-  //         throw Exception("Download-Verzeichnis nicht gefunden.");
-  //       }
-
-  //       // Datei kopieren
-  //       final destinationPath = '${downloadDir.path}/events.db';
-  //       await dbPath.copy(destinationPath);
-
-  //       debugPrint('Datenbank erfolgreich nach $destinationPath kopiert.');
-  //     } else {
-  //       throw Exception("Speicherzugriff verweigert.");
-  //     }
-  //   } catch (e) {
-  //     debugPrint('Fehler beim Kopieren der Datenbank: $e');
-  //   }
-  // }
-
-  // Firestore Datenbank export
+  // Firestore Daten in die lokale DB schreiben
   Future<void> _exportFirestoreToSqflite() async {
     try {
+      // Zuerst prüfen, ob die events.db existiert, und ggf. löschen
+      String dbPath =
+          '/storage/emulated/0/Android/data/de.fludev.ukalender/files/events.db';
+
+      // Prüfen, ob die Datenbank existiert
+      bool dbExists = await File(dbPath).exists();
+
+      if (dbExists) {
+        // Falls die Datenbank existiert, alle vorhandenen Daten löschen
+        Database? db = await DatabaseHelper.instance.database;
+        if (db != null) {
+          await db.delete('events');
+          print('Vorhandene Datenbank wurde geleert.');
+        }
+      } else {
+        // Falls die Datenbank nicht existiert, sie wird automatisch erstellt
+        // beim ersten Zugriff durch DatabaseHelper.instance.database
+        print('Datenbank existiert noch nicht. Sie wird neu erstellt.');
+      }
+
       // Initialisiere die Datenbank, falls noch nicht geschehen
       Database? db = await DatabaseHelper.instance.database;
 
@@ -262,18 +202,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
       // Iteration durch die Dokumente
       for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        // Daten des Dokuments als Map<String, dynamic>
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
         // Firestore-Daten in ein EventSqflite-Objekt transformieren
         EventSqflite event = EventSqflite(
           id: doc.id, // Dokument-ID als Event-ID verwenden
-          title: doc['title'],
-          body: doc['body'],
-          eventTime: doc['eventTime'],
-          localTime: doc['localTime'],
-          dayBefore: doc['dayBefore'],
+          title: data['title'],
+          body: data['body'],
+          eventTime: data['eventTime'],
+          localTime: data['localTime'],
+          dayBefore: data.containsKey('dayBefore') ? data['dayBefore'] : '',
           notificationIds: EventSqflite.notificationIdsToJson(
-              List<int>.from(doc['notificationIds'])),
-          thirtyMinutesBefore: doc['thirtyMinutesBefore'],
-          twoHoursBefore: doc['twoHoursBefore'],
+              List<int>.from(data['notificationIds'])),
+          thirtyMinutesBefore: data.containsKey('thirtyMinutesBefore')
+              ? data['thirtyMinutesBefore']
+              : '',
+          twoHoursBefore:
+              data.containsKey('twoHoursBefore') ? data['twoHoursBefore'] : '',
         );
 
         // Event in die lokale SQLite-Datenbank einfügen
@@ -286,26 +232,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
-  Future<void> _deleteSqfliteDatabase() async {
-    // // Pfad zur Datenbankdatei abrufen
-    // String databasesPath = await getDatabasesPath();
-    // String path = join(databasesPath, 'events.db'); // Dynamisch den Datenbankpfad erstellen
-
-    // Pfad zur Datenbankdatei abrufen
-    String path =
-        '/storage/emulated/0/Android/data/de.fludev.ukalender/files/events.db';
-
-    // Prüfen, ob die Datenbank existiert
-    if (await File(path).exists()) {
-      // Datenbank löschen
-      await deleteDatabase(path);
-      print('Die Datenbank events.db wurde gelöscht.');
-    } else {
-      // Datenbank existiert nicht
-      print('Die Datenbank events.db wurde nicht gefunden.');
-    }
-  }
-
   // Widget erstellen
   @override
   Widget build(BuildContext context) {
@@ -314,22 +240,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
         title: const Text('Kalender'),
         backgroundColor: Colors.orange,
         actions: <Widget>[
-          // Lokale DB löschen
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.white),
-            onPressed: _deleteSqfliteDatabase,
-          ),
+          // // Lokale DB löschen
+          // IconButton(
+          //   icon: const Icon(Icons.delete, color: Colors.white),
+          //   onPressed: _deleteSqfliteDatabase,
+          // ),
           // Firestore Datenbank export
           IconButton(
-            icon: const Icon(Icons.get_app, color: Colors.white),
+            icon: const Icon(Icons.sync, color: Colors.white),
             onPressed: _exportFirestoreToSqflite,
           ),
-          // // Datenbank in den Smartphone-Ordner Download kopieren
-          // IconButton(
-          //   icon: const Icon(Icons.file_copy, color: Colors.white),
-          //   onPressed: _copyDatabaseToDownloads,
-          // ),
-          // Notification auslesen
           IconButton(
             icon: const Icon(Icons.notifications_active_outlined,
                 color: Colors.white),

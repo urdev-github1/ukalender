@@ -33,7 +33,7 @@ class EventStorageSqflite {
       // Extrahiere nur die Uhrzeit aus eventTime
       String localTime = DateFormat('HH:mm').format(eventDateTime);
 
-      // ID generieren, da die Datenbank keinen Primärschlüssel besitzt.
+      // ID generieren, da die Datenbank keinen automatisch generierten Primärschlüssel besitzt.
       final eventId = id ?? _uuid.v4();
 
       // Speichern der Daten in Sqflite

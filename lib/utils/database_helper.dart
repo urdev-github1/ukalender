@@ -54,17 +54,6 @@ class DatabaseHelper {
     );
   }
 
-  // Future<Database> _initDatabase() async {
-  //   // Pfad zur Datenbankdatei
-  //   String path = join(await getDatabasesPath(), 'events.db');
-  //   // Datenbank öffnen bzw. erstellen, falls sie noch nicht existiert
-  //   return await openDatabase(
-  //     path,
-  //     version: 1,
-  //     onCreate: _onCreate,
-  //   );
-  // }
-
   // Methode zur Erstellung der Datenbanktabelle
   // (Wird aufgerufen, wenn die Datenbank zum ersten Mal erstellt wird.)
   Future _onCreate(Database db, int version) async {

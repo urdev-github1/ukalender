@@ -43,7 +43,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
   }
 
   //
-  Future<void> _saveToFirestore() async {
+  Future<void> _saveToDatabase() async {
     final String title = _titleController.text;
     final String body = _bodyController.text;
     final DateTime notificationDateTime = _selectedDate;
@@ -102,7 +102,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
       );
     }
 
-    // Speichern des Events mit Benachrichtigungs-IDs in Firestore.
+    // Speichern des Events mit Benachrichtigungs-IDs in Database.
     // Ausgeführt über event_Storage.dart.
     await eventStorage.saveEvent(
       title: title,
@@ -225,12 +225,12 @@ class _AddEventDialogState extends State<AddEventDialog> {
                     child: const Text("Abbrechen"),
                   ),
 
-                  // Event in Cloud Firestore abspeichern
+                  // Event in Database abspeichern
                   TextButton(
                     onPressed: () {
                       if (_titleController.text.isNotEmpty) {
                         //
-                        _saveToFirestore();
+                        _saveToDatabase();
                         Navigator.pop(context); // Dialog schließen
                       }
                     },
