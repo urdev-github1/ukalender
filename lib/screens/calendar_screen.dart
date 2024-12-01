@@ -36,6 +36,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   late DateTime _selectedDay;
   // Speichert den aktuell fokussierten Tag
   late DateTime _focusedDay;
+  // Flag, um zu überprüfen, ob das Widget noch gemountet ist
+  bool _isMounted = true;
 
   @override
   void initState() {
@@ -53,6 +55,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _loadAllEvents();
   }
 
+  // Sicherzustellen, dass setState() nicht aufgerufen wird, nachdem
+  // das Widget aus dem Baum entfernt wurde.
+  @override
+  void dispose() {
+    _isMounted = false; // Das Widget wird nicht mehr gemountet
+    super.dispose();
+  }
+
   // Lädt alle Events aus der Sqflite-Datenbank und speichert sie in einer Map.
   Future<void> _loadAllEvents() async {
     // Zugriff auf die Datenbankinstanz, damit sie bei Bedarf erstellt wird
@@ -68,25 +78,28 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final List<EventSqlite> events =
         await DatabaseHelper.instance.queryAllEvents();
 
-    setState(() {
-      // Konvertieren der Event-Liste in eine Map mit Datum als Schlüssel
-      _events = {};
-      for (var event in events) {
-        final eventDate =
-            DateTime.parse(event.eventTime); // ISO-8601 String zu DateTime
-        final localDate =
-            DateTime(eventDate.year, eventDate.month, eventDate.day);
+    // Überprüfen, ob das Widget noch gemountet ist
+    if (_isMounted) {
+      setState(() {
+        // Konvertieren der Event-Liste in eine Map mit Datum als Schlüssel
+        _events = {};
+        for (var event in events) {
+          final eventDate =
+              DateTime.parse(event.eventTime); // ISO-8601 String zu DateTime
+          final localDate =
+              DateTime(eventDate.year, eventDate.month, eventDate.day);
 
-        // Liste der Events für den Tag initialisieren, falls nicht vorhanden
-        if (_events[localDate] == null) {
-          _events[localDate] = [];
+          // Liste der Events für den Tag initialisieren, falls nicht vorhanden
+          if (_events[localDate] == null) {
+            _events[localDate] = [];
+          }
+
+          // Event zur Liste hinzufügen
+          _events[localDate]!.add(event);
         }
-
-        // Event zur Liste hinzufügen
-        _events[localDate]!.add(event);
-      }
-    });
-    print('Events erfolgreich geladen.');
+      });
+      print('Events erfolgreich geladen.');
+    }
   }
 
   //

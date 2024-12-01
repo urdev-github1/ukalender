@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:ukalender/utils/event_storage_firestore.dart';
 import '../models/event_sqlite.dart';
 //import '../utils/event_storage_firestore.dart';
 import '../utils/database_helper.dart';
@@ -16,6 +17,8 @@ class EventListScreenSqlite extends StatefulWidget {
 class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
   // Zustand für das Ein-/Ausblenden von Kacheln
   bool _showTiles = false;
+
+  //EventStorageFirestore? _eventStorageFirestore;
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +193,8 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
                   if (shouldDelete == true) {
                     //await eventStorage.deleteEvent(doc.id);
                     await DatabaseHelper.instance.deleteEvent(event.id);
+                    //EventStorageFirestore? eventStorageFirestore;
+                    //await eventStorageFirestore?.deleteEvent(event.id);
                     // Prüfen, ob das Widget noch im Baum ist, bevor die Snackbar angezeigt wird
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
