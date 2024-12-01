@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+//import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:ukalender/models/event_sqflite.dart';
@@ -11,7 +11,7 @@ import '../screens/notification_screen.dart';
 //import '../utils/event_storage_firestore.dart';
 import '../widgets/show_events_for_day.dart';
 //import '../models/event_firestore.dart';
-import '../screens/event_list_screen.dart';
+import 'event_list_screen_sqlite.dart';
 import '../widgets/add_event_dialog.dart';
 
 /// Klasse zum Aufbau der Bedienoberfläche
@@ -129,7 +129,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void _showEventListScreen() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const EventListScreen()),
+      MaterialPageRoute(builder: (context) => const EventListScreenSqlite()),
     );
   }
 
