@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:ukalender/utils/event_storage_firestore.dart';
+//import 'package:ukalender/utils/event_storage_firestore.dart';
 import '../models/event_sqlite.dart';
 //import '../utils/event_storage_firestore.dart';
 import '../utils/database_helper.dart';
