@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:ukalender/models/event_sqflite.dart';
+import 'package:ukalender/models/event_sqlite.dart';
 
 /// Klasse, die eine Datenbank für Benachrichtigungen verwalten soll
 class DatabaseHelper {
@@ -75,24 +75,24 @@ class DatabaseHelper {
   /// CRUD-Operationen:
 
   // Methode zum Einfügen eines Events in die Datenbank
-  Future<int> insertEvent(EventSqflite event) async {
+  Future<int> insertEvent(EventSqlite event) async {
     Database? db = await instance.database;
     return await db!.insert('events', event.toMap());
   }
 
   // Methode zum Abfragen aller Events aus der Datenbank
-  Future<List<EventSqflite>> queryAllEvents() async {
+  Future<List<EventSqlite>> queryAllEvents() async {
     Database? db = await instance.database;
     // Alle Dokumente aus der 'events'-Tabelle abfragen
     List<Map<String, dynamic>> eventMaps = await db!.query('events');
     // Liste von EventSqflite-Objekten aus den Maps erstellen
     return List.generate(eventMaps.length, (index) {
-      return EventSqflite.fromMap(eventMaps[index]);
+      return EventSqlite.fromMap(eventMaps[index]);
     });
   }
 
   // Methode zum Aktualisieren eines Events in der Datenbank
-  Future<int> updateEvent(EventSqflite event) async {
+  Future<int> updateEvent(EventSqlite event) async {
     Database? db = await instance.database;
     // Event in der 'events'-Tabelle aktualisieren und die Anzahl der
     // aktualisierten Zeilen zurückgeben

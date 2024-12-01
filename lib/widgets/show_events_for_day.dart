@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 //import 'package:ukalender/models/event_firestore.dart';
-import 'package:ukalender/models/event_sqflite.dart';
+import 'package:ukalender/models/event_sqlite.dart';
 import 'package:intl/intl.dart'; // Zum Formatieren des Datums
 
 /// Events vom aktuellen Tag (Aufruf über _onDayLongPressed)
 class ShowEventsForDay extends StatefulWidget {
   final DateTime selectedDay;
   //final List<EventFirestore> eventsForDay;
-  final List<EventSqflite>
+  final List<EventSqlite>
       eventsForDay; // Ändern von EventFirestore zu EventSqflite
 
   const ShowEventsForDay({

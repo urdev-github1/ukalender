@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
-import '../models/event_sqflite.dart';
+import '../models/event_sqlite.dart';
 import '../utils/database_helper.dart';
 
 /// Verbindung nach Sqflite und Daten speichern
@@ -37,7 +37,7 @@ class EventStorageSqflite {
       final eventId = id ?? _uuid.v4();
 
       // Speichern der Daten in Sqflite
-      final event = EventSqflite(
+      final event = EventSqlite(
         id: eventId,
         title: title,
         body: body,
@@ -47,7 +47,7 @@ class EventStorageSqflite {
         twoHoursBefore: twoHoursBefore?.toIso8601String() ?? '',
         thirtyMinutesBefore: thirtyMinutesBefore?.toIso8601String() ?? '',
         notificationIds:
-            EventSqflite.notificationIdsToJson(notificationIds ?? []),
+            EventSqlite.notificationIdsToJson(notificationIds ?? []),
       );
 
       // Event in die Datenbank einfügen
@@ -61,8 +61,8 @@ class EventStorageSqflite {
 
   // *** AUSLESEN ***
 
-  Future<Map<DateTime, List<EventSqflite>>> loadEventsFromSqflite() async {
-    final Map<DateTime, List<EventSqflite>> eventsFromSqflite = {};
+  Future<Map<DateTime, List<EventSqlite>>> loadEventsFromSqflite() async {
+    final Map<DateTime, List<EventSqlite>> eventsFromSqflite = {};
     final events = await DatabaseHelper.instance.queryAllEvents();
 
     eventsFromSqflite.clear();

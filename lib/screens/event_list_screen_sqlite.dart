@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import '../models/event_sqflite.dart';
+import '../models/event_sqlite.dart';
 //import '../utils/event_storage_firestore.dart';
 import '../utils/database_helper.dart';
 
@@ -58,7 +58,7 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
       //   stream: eventStorage.getEventStream(),
 
       // FutureBuilder, um alle Daten aus der lokalen DB zu laden.
-      body: FutureBuilder<List<EventSqflite>>(
+      body: FutureBuilder<List<EventSqlite>>(
         // Abruf der Daten in 'database_helper.dart'
         future: DatabaseHelper.instance.queryAllEvents(),
 

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 //import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:ukalender/models/event_sqflite.dart';
+import 'package:ukalender/models/event_sqlite.dart';
 import 'package:ukalender/utils/database_helper.dart';
 import '../screens/notification_screen.dart';
 //import '../utils/event_storage_firestore.dart';
@@ -30,7 +30,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // Speichert die Ereignisse, die an einem bestimmten Tag stattfinden
   //late Map<DateTime, List<EventFirestore>> _events;
-  late Map<DateTime, List<EventSqflite>> _events;
+  late Map<DateTime, List<EventSqlite>> _events;
 
   // Speichert den aktuell ausgewählten Tag
   late DateTime _selectedDay;
@@ -65,7 +65,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
 
     // Abrufen aller Events aus der Datenbank
-    final List<EventSqflite> events =
+    final List<EventSqlite> events =
         await DatabaseHelper.instance.queryAllEvents();
 
     setState(() {
@@ -90,7 +90,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   //
-  List<EventSqflite> _getEventsForDay(DateTime day) {
+  List<EventSqlite> _getEventsForDay(DateTime day) {
     // Datum normalisieren (nur Jahr, Monat und Tag)
     final localDay = DateTime(day.year, day.month, day.day);
     return _events[localDay] ?? [];
@@ -113,7 +113,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   // Ein Kalendertag wurde dauerhaft angedrückt
   void _onDayLongPressed(DateTime selectedDay, DateTime focusedDay) {
     //List<EventFirestore> eventsForDay = _getEventsForDay(selectedDay);
-    List<EventSqflite> eventsForDay = _getEventsForDay(selectedDay);
+    List<EventSqlite> eventsForDay = _getEventsForDay(selectedDay);
 
     // Zeige alle Termine für den angeklickten Kalendertag
     showDialog(
@@ -206,14 +206,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
         // Firestore-Daten in ein EventSqflite-Objekt transformieren
-        EventSqflite event = EventSqflite(
+        EventSqlite event = EventSqlite(
           id: doc.id, // Dokument-ID als Event-ID verwenden
           title: data['title'],
           body: data['body'],
           eventTime: data['eventTime'],
           localTime: data['localTime'],
           dayBefore: data.containsKey('dayBefore') ? data['dayBefore'] : '',
-          notificationIds: EventSqflite.notificationIdsToJson(
+          notificationIds: EventSqlite.notificationIdsToJson(
               List<int>.from(data['notificationIds'])),
           thirtyMinutesBefore: data.containsKey('thirtyMinutesBefore')
               ? data['thirtyMinutesBefore']
@@ -226,9 +226,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
         await DatabaseHelper.instance.insertEvent(event);
       }
 
-      print('Daten erfolgreich aus Firestore exportiert.');
+      print('Daten erfolgreich aus Firestore importiert.');
     } catch (e) {
-      print('Fehler beim Exportieren der Daten: $e');
+      print('Fehler beim Importieren der Daten: $e');
     }
   }
 
