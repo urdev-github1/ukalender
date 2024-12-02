@@ -24,15 +24,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _pendingNotifications = _notificationService.getPendingNotifications();
   }
 
-  /// Temporär entfernt!
-  // // Funktion zum Löschen einer Benachrichtigung
-  // Future<void> _removeNotification(int id) async {
-  //   await _notificationService.removeNotification(id);
-  //   setState(() {
-  //     _loadPendingNotifications(); // Liste neu laden nach dem Löschen
-  //   });
-  // }
-
   // Sicherheitsabfrage vor dem Löschen der Notifications
   Future<bool?> _showConfirmationDialog(
     BuildContext context, {
@@ -199,13 +190,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     '${notifications[index].body}',
                     style: const TextStyle(fontSize: 16, color: Colors.black87),
                   ),
-
-                  /// Temporär entfernt!
-                  // trailing: IconButton(
-                  //   icon: const Icon(Icons.delete, color: Colors.black38),
-                  //   onPressed: () =>
-                  //       _removeNotification(notifications[index].id),
-                  // ),
                 );
               },
             );

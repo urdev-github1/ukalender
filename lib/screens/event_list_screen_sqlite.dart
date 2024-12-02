@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-//import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-//import 'package:ukalender/utils/event_storage_firestore.dart';
 import '../models/event_sqlite.dart';
-//import '../utils/event_storage_firestore.dart';
 import '../utils/database_helper.dart';
 
 /// Alle Events als Kachel untereinander in zeitlich aufsteigender Reihenfolge
@@ -17,8 +14,6 @@ class EventListScreenSqlite extends StatefulWidget {
 class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
   // Zustand für das Ein-/Ausblenden von Kacheln
   bool _showTiles = false;
-
-  //EventStorageFirestore? _eventStorageFirestore;
 
   @override
   Widget build(BuildContext context) {
@@ -55,11 +50,6 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
         ],
       ),
 
-      // // StreamBuilder, um alle Daten aus Cloud Firestore zu laden.
-      // body: StreamBuilder<QuerySnapshot>(
-      //   // Abruf der Daten in 'event_storage.dart'
-      //   stream: eventStorage.getEventStream(),
-
       // FutureBuilder, um alle Daten aus der lokalen DB zu laden.
       body: FutureBuilder<List<EventSqlite>>(
         // Abruf der Daten in 'database_helper.dart'
@@ -83,34 +73,6 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text("Keine Events vorhanden."));
           }
-          // if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          //   return const Center(child: Text("Keine Events vorhanden."));
-          // }
-
-          // // Daten sind geladen und zur Anzeige bereit
-          // final eventDocs = snapshot.data!.docs;
-
-          // // Sortiere die Dokumente basierend auf dem Feld 'eventTime'
-          // eventDocs.sort((a, b) {
-          //   final aTime = a['eventTime'] != null
-          //       ? DateTime.parse(a['eventTime'])
-          //       : DateTime.now();
-          //   final bTime = b['eventTime'] != null
-          //       ? DateTime.parse(b['eventTime'])
-          //       : DateTime.now();
-          //   return aTime.compareTo(bTime);
-          // });
-
-          // // Keine Events aus der Vergangenheit anzeigen, wenn _showTiles=false.
-          // final now = DateTime.now();
-          // final filteredDocs = _showTiles
-          //     ? eventDocs
-          //     : eventDocs.where((doc) {
-          //         final eventTime = doc['eventTime'] != null
-          //             ? DateTime.parse(doc['eventTime'])
-          //             : null;
-          //         return eventTime == null || eventTime.isAfter(now);
-          //       }).toList();
 
           // Events sortieren und filtern
           final now = DateTime.now();
@@ -132,15 +94,7 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
             // Der itemBuilder wird aufgerufen, um jedes Item im ListView zu erstellen.
             itemBuilder: (context, index) {
               // Lade die Daten aus dem Dokument.
-              //final doc = filteredDocs[index];
               final event = filteredEvents[index];
-
-              // final eventData = doc.data() as Map<String, dynamic>;
-              // final title = eventData['title'] ?? 'Kein Titel';
-              // final body = eventData['body'] ?? 'Keine Beschreibung';
-              // final eventDay = eventData['eventTime'] != null
-              //     ? DateTime.parse(eventData['eventTime'])
-              //     : null;
 
               //final eventTime = eventData['localTime']; // Uhrzeit
               final eventTime = event.localTime;
@@ -237,9 +191,6 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            // eventDay != null
-                            //     ? 'Termin: ${eventDay.day}.${eventDay.month}.${eventDay.year} um $eventTime Uhr' //${eventTime.}.${eventTime.month}'
-                            //     : "Terminbeginn unbekannt",
                             'Termin: $eventYMD um $eventTime Uhr',
                             style: TextStyle(
                               color: Colors.grey[700],

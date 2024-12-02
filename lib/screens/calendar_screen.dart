@@ -1,22 +1,18 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-//import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:ukalender/models/event_sqlite.dart';
 import 'package:ukalender/utils/database_helper.dart';
 import '../screens/notification_screen.dart';
-//import '../utils/event_storage_firestore.dart';
 import '../widgets/show_events_for_day.dart';
-//import '../models/event_firestore.dart';
 import 'event_list_screen_sqlite.dart';
 import '../widgets/add_event_dialog.dart';
 
 /// Klasse zum Aufbau der Bedienoberfläche
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key, required String dataSource});
+  const CalendarScreen({super.key});
 
   @override
   // Erstellt den Zustand für die Kalender-App
@@ -51,7 +47,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     // bevor sie benutzt werden kann.
     _events = {};
 
-    // Lade alle Events beim App-Neustart aus der Firestore-Datenbank
+    // Lade alle Events beim App-Neustart aus der SQLite-Datenbank
     _loadAllEvents();
   }
 
@@ -63,7 +59,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     super.dispose();
   }
 
-  // Lädt alle Events aus der Sqflite-Datenbank und speichert sie in einer Map.
+  // Lädt alle Events aus der SQLite-Datenbank und speichert sie in einer Map.
   Future<void> _loadAllEvents() async {
     // Zugriff auf die Datenbankinstanz, damit sie bei Bedarf erstellt wird
     final db = await DatabaseHelper.instance.database;
@@ -162,19 +158,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         MaterialPageRoute(builder: (context) => const NotificationScreen()));
   }
 
-  // VORBEREITET: Sqflite -> JSON
-  // Future<void> _exportDataAsJson() async {
-  //   const dbPath = '/data/data/de.fludev.ukalender/databases/events.db';
-  //   final db = await openDatabase(dbPath);
-
-  //   final data = await db.rawQuery('SELECT * FROM events'); // Tabelle anpassen
-  //   final exportDir = await getExternalStorageDirectory();
-  //   final file = File('${exportDir!.path}/events.json');
-
-  //   await file.writeAsString(data.toString());
-  //   print('Data exported to: ${file.path}');
-  // }
-
   // Firestore Daten in die lokale DB schreiben
   Future<void> _exportFirestoreToSqflite() async {
     try {
@@ -253,11 +236,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         title: const Text('Kalender'),
         backgroundColor: Colors.orange,
         actions: <Widget>[
-          // // Lokale DB löschen
-          // IconButton(
-          //   icon: const Icon(Icons.delete, color: Colors.white),
-          //   onPressed: _deleteSqfliteDatabase,
-          // ),
           // Firestore Datenbank export
           IconButton(
             icon: const Icon(Icons.sync, color: Colors.white),

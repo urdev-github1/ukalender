@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-// // Für initializeDateFormatting
-// import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'screens/start_screen.dart';
+import 'package:ukalender/screens/calendar_screen.dart';
+import 'package:ukalender/screens/login_screen.dart';
+import 'package:ukalender/screens/splash_screen.dart';
 import '../firebase_options.dart';
 
 Future<void> main() async {
@@ -11,8 +11,6 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // // Gebietsschema: Initialisiere für Deutsch
-  // await initializeDateFormatting('de', null);
   runApp(const MyApp());
 }
 
@@ -29,6 +27,14 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
       ),
 
+      //
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const CalendarScreen(),
+      },
+
       // Festlegung der Standardsprache und -region für die ganze App
       locale: const Locale('de', 'DE'),
       // Liste der unterstützten Sprachen und Regionen
@@ -43,8 +49,6 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-
-      home: const StartScreen(),
     );
   }
 }
