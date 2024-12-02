@@ -16,7 +16,7 @@ import '../widgets/add_event_dialog.dart';
 
 /// Klasse zum Aufbau der Bedienoberfläche
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key});
+  const CalendarScreen({super.key, required String dataSource});
 
   @override
   // Erstellt den Zustand für die Kalender-App
