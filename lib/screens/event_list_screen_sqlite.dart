@@ -17,9 +17,6 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
 
   @override
   Widget build(BuildContext context) {
-    // Instanz von EventStorageFirestore
-    //final eventStorage = EventStorageFirestore();
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -75,34 +72,42 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
           }
 
           // Events sortieren und filtern
-          final now = DateTime.now();
+          final now = DateTime.now(); // Aktuelles Datum
+          // Aktuelles Datum ohne Uhrzeit
+          final startOfDay = DateTime(now.year, now.month, now.day);
+
+          // Sortiere die Events nach ihrem Event-Time-Attribut in aufsteigender Reihenfolge.
+          // Die Methode `DateTime.parse` konvertiert den String `eventTime` in ein DateTime-Objekt.
+          // Die `compareTo`-Methode vergleicht die DateTime-Objekte, um die Sortierung durchzuführen.
           final events = snapshot.data!
             ..sort((a, b) => DateTime.parse(a.eventTime)
                 .compareTo(DateTime.parse(b.eventTime)));
+
+          // Filtere die Events basierend auf dem Zustand von `_showTiles`.
+          // - Wenn `_showTiles` `true` ist, werden alle Events angezeigt.
+          // - Wenn `_showTiles` `false` ist, werden nur Events angezeigt, die später oder am gleichen Tag wie das aktuelle Datum liegen.
+          // Die Methode `isAfter` überprüft, ob das Event nach dem aktuellen Datum liegt.
+          // Die Methode `isAtSameMomentAs` überprüft, ob das Event am gleichen Tag wie das aktuelle Datum liegt.
           final filteredEvents = _showTiles
               ? events
               : events.where((event) {
                   final eventTime = DateTime.parse(event.eventTime);
-                  return eventTime.isAfter(now);
+                  return eventTime.isAfter(startOfDay) ||
+                      eventTime.isAtSameMomentAs(startOfDay);
                 }).toList();
 
           // ListView, um die Events als Kacheln untereinander anzuzeigen.
           return ListView.builder(
             padding: const EdgeInsets.all(10),
-            // itemCount: filteredDocs.length,
             itemCount: filteredEvents.length,
             // Der itemBuilder wird aufgerufen, um jedes Item im ListView zu erstellen.
             itemBuilder: (context, index) {
               // Lade die Daten aus dem Dokument.
               final event = filteredEvents[index];
-
-              //final eventTime = eventData['localTime']; // Uhrzeit
               final eventTime = event.localTime;
 
               // Dieser Ansatz konvertiert den String-Zeitstempel in ein DateTime-Objekt,
               // das dann mit der DateFormat-Klasse verwendet werden kann.
-              // final String eventYMD = DateFormat('dd.MM.yy')
-              //     .format(DateTime.parse(eventData['eventTime']));
               final eventYMD = DateFormat('dd.MM.yy')
                   .format(DateTime.parse(event.eventTime));
 
@@ -126,7 +131,6 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
                       return AlertDialog(
                         title: const Text('ACHTUNG!!!'),
                         content: Text(
-                            //'$eventYMD: $title\n\nDieser Termin wird aus der Datenbank gelöscht.',
                             '$eventYMD: ${event.title}\n\nDieser Termin wird aus der Datenbank gelöscht.',
                             style: const TextStyle(fontSize: 16)),
                         actions: [
@@ -145,21 +149,16 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
 
                   // Wenn die Löschung bestätigt wurde
                   if (shouldDelete == true) {
-                    //await eventStorage.deleteEvent(doc.id);
                     await DatabaseHelper.instance.deleteEvent(event.id);
-                    //EventStorageFirestore? eventStorageFirestore;
-                    //await eventStorageFirestore?.deleteEvent(event.id);
                     // Prüfen, ob das Widget noch im Baum ist, bevor die Snackbar angezeigt wird
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        //SnackBar(content: Text('$title wurde gelöscht')),
                         SnackBar(
                             content: Text('${event.title} wurde gelöscht')),
                       );
                     }
                     setState(() {}); // Trigger UI refresh
                   }
-
                   // Rückgabe von true oder false, je nach Bestätigung
                   return shouldDelete;
                 },
@@ -174,14 +173,12 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            //title,
                             event.title,
                             style: const TextStyle(
                               fontSize: 20,

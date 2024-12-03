@@ -51,11 +51,35 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Methode zur Abmeldung des Benutzers
+  Future<void> _signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Erfolgreich abgemeldet")),
+      );
+      // Nach der Abmeldung bleibt der Nutzer auf der Login-Seite
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Fehler beim Abmelden: $e")),
+      );
+    }
+  }
+
   // Überschreiben der build-Methode, um die UI der LoginScreen-Klasse zu erstellen
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login / Registrierung")),
+      appBar: AppBar(
+        title: const Text("Login / Registrierung"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _signOut, // Abmeldeaktion
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

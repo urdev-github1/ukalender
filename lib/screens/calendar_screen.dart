@@ -95,10 +95,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
         }
       });
       print('Events erfolgreich geladen.');
+
+      // Zeige eine Snackbar, wenn das Widget noch gemountet ist
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Alle Events wurden aus der lokalen DB in den Kalender übertragen.')),
+        );
+      }
     }
   }
 
-  //
+  // Wenn ein Kalendertag dauerhaft angedrückt wurde.
   List<EventSqlite> _getEventsForDay(DateTime day) {
     // Datum normalisieren (nur Jahr, Monat und Tag)
     final localDay = DateTime(day.year, day.month, day.day);
@@ -223,6 +232,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
       }
 
       print('Daten erfolgreich aus Firestore importiert.');
+
+      // Zeige eine Snackbar, wenn das Widget noch gemountet ist
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Alle Events wurden aus der Cloud in die lokale DB gespeichert.')),
+        );
+      }
     } catch (e) {
       print('Fehler beim Importieren der Daten: $e');
     }
@@ -236,11 +254,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
         title: const Text('Kalender'),
         backgroundColor: Colors.orange,
         actions: <Widget>[
-          // Firestore Datenbank export
-          IconButton(
-            icon: const Icon(Icons.sync, color: Colors.white),
-            onPressed: _exportFirestoreToSqflite,
-          ),
+          // // Firestore Datenbank export
+          // IconButton(
+          //   icon: const Icon(Icons.sync, color: Colors.white),
+          //   onPressed: _exportFirestoreToSqflite,
+          // ),
           IconButton(
             icon: const Icon(Icons.notifications_active_outlined,
                 color: Colors.white),
@@ -255,6 +273,41 @@ class _CalendarScreenState extends State<CalendarScreen> {
           IconButton(
             icon: const Icon(Icons.event, color: Colors.white),
             onPressed: _openAddEventDialog,
+          ),
+          // PopupMenuButton hinzufügen
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'export') {
+                _exportFirestoreToSqflite();
+              } else if (value == 'logout') {
+                // Abmelden
+                Navigator.of(context).pushReplacementNamed('/login');
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                const PopupMenuItem<String>(
+                  value: 'export',
+                  child: Row(
+                    children: [
+                      Icon(Icons.sync, color: Colors.orange),
+                      SizedBox(width: 8), // Abstand zwischen Icon und Text
+                      Text('Datenbankabgleich'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.exit_to_app, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Text('Abmelden'),
+                    ],
+                  ),
+                ),
+              ];
+            },
           ),
         ],
       ),
@@ -345,19 +398,29 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   calendarBuilders: CalendarBuilders(
                     // Event-Markierungen (events -> siehe Methode '_loadAllEvents')
                     markerBuilder: (context, day, events) {
-                      // UTC-Datum in lokales Datum
+                      // UTC-Datum in lokales Datum konvertieren
                       final localDay = DateTime(day.year, day.month, day.day);
 
+                      // Aktuelles Datum
+                      final now = DateTime.now();
+
+                      // Aktuelles Datum ohne die Uhrzeit
+                      final startOfDay = DateTime(now.year, now.month, now.day);
+
                       // Überprüfen, ob der Tag in der Vergangenheit liegt
-                      final isPastDay = localDay.isBefore(DateTime.now());
+                      final isPastDay = localDay.isBefore(startOfDay);
+
+                      // Überprüfen, ob der Tag der aktuelle Tag ist
+                      final isToday = localDay.isAtSameMomentAs(startOfDay);
 
                       // Events für den gewälten Tag abfragen.
                       final dayEvents = _getEventsForDay(localDay);
 
                       if (dayEvents.isNotEmpty) {
-                        // Farbe basierend darauf, ob der Tag in der Vergangenheit liegt
-                        final markerColor =
-                            isPastDay ? Colors.orange : Colors.green;
+                        // Farbe basierend darauf, ob der Tag in der Vergangenheit, heute oder in der Zukunft liegt
+                        final markerColor = isToday
+                            ? Colors.redAccent
+                            : (isPastDay ? Colors.orange : Colors.green);
 
                         // Nimm das erste Event des Tages
                         final firstEvent = (dayEvents.first).title;
