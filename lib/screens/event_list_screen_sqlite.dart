@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../utils/event_storage_firestore.dart';
 import '../models/event_sqlite.dart';
 import '../utils/database_helper.dart';
 
@@ -149,15 +150,39 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
 
                   // Wenn die Löschung bestätigt wurde
                   if (shouldDelete == true) {
-                    await DatabaseHelper.instance.deleteEvent(event.id);
-                    // Prüfen, ob das Widget noch im Baum ist, bevor die Snackbar angezeigt wird
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text('${event.title} wurde gelöscht')),
-                      );
+                    try {
+                      // Schritt 1: In SQLite löschen
+                      await DatabaseHelper.instance.deleteEvent(event.id);
+                      debugPrint("SQLite: Event mit ID ${event.id} gelöscht.");
+
+                      // Schritt 2: In Firestore löschen
+                      final eventStorage = EventStorageFirestore();
+                      await eventStorage.deleteEvent(event.id);
+                      debugPrint(
+                          "Firestore: Event mit ID ${event.id} gelöscht.");
+
+                      // Warten, um sicherzustellen, dass alles abgeschlossen ist
+                      await Future.delayed(const Duration(milliseconds: 100));
+
+                      // Schritt 3: UI-Update sicherstellen
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('${event.title} wurde gelöscht')),
+                        );
+                      }
+
+                      // // Schritt 4: UI neu rendern
+                      setState(() {});
+                    } catch (error) {
+                      debugPrint("Fehler beim Löschen: $error");
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Fehler beim Löschen: $error')),
+                        );
+                      }
                     }
-                    setState(() {}); // Trigger UI refresh
                   }
                   // Rückgabe von true oder false, je nach Bestätigung
                   return shouldDelete;
