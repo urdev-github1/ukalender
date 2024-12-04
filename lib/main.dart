@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:ukalender/screens/calendar_screen.dart';
-import 'package:ukalender/screens/login_screen.dart';
-import 'package:ukalender/screens/splash_screen.dart';
+import '../screens/calendar_screen.dart';
+import '../screens/login_screen.dart';
+import '../screens/splash_screen.dart';
 import '../firebase_options.dart';
 
 Future<void> main() async {

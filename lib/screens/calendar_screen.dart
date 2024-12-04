@@ -254,11 +254,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         title: const Text('Kalender'),
         backgroundColor: Colors.orange,
         actions: <Widget>[
-          // // Firestore Datenbank export
-          // IconButton(
-          //   icon: const Icon(Icons.sync, color: Colors.white),
-          //   onPressed: _exportFirestoreToSqflite,
-          // ),
           IconButton(
             icon: const Icon(Icons.notifications_active_outlined,
                 color: Colors.white),

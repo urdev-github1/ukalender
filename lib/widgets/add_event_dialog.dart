@@ -102,8 +102,8 @@ class _AddEventDialogState extends State<AddEventDialog> {
       );
     }
 
-    // Speichern des Events mit Benachrichtigungs-IDs in Database.
-    // Ausgeführt über event_Storage.dart.
+    // Events speichern in Firestore + SQLite.
+    // (Wird ausgeführt über event_Storage.dart.)
     await eventStorage.saveEvent(
       title: title,
       body: body,
@@ -111,7 +111,6 @@ class _AddEventDialogState extends State<AddEventDialog> {
       dayBefore: dayBefore,
       twoHoursBefore: twoHoursBefore,
       thirtyMinutesBefore: thirtyMinutesBefore,
-      // Übergebe die IDs der Benachrichtigungen
       notificationIds: notificationIds,
     );
   }

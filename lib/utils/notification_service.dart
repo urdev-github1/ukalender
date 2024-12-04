@@ -103,6 +103,26 @@ class NotificationService {
     );
   }
 
+  // Methode zur Reaktivierung einer Notification
+  Future<void> reactivateNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledTime,
+  }) async {
+    // Überprüfen, ob der geplante Zeitpunkt in der Zukunft liegt
+    if (scheduledTime.isAfter(DateTime.now())) {
+      await scheduleNotification(
+        id: id,
+        title: title,
+        body: body,
+        scheduledTime: scheduledTime,
+      );
+    } else {
+      print("Notification-Zeitpunkt liegt in der Vergangenheit. Keine Aktion.");
+    }
+  }
+
   // Lösche eine bestimmte Benachrichtigung
   Future<void> removeNotification(int id) async {
     await _localNotificationsPlugin.cancel(id);

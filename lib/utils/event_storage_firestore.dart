@@ -115,6 +115,25 @@ class EventStorageFirestore {
     return eventsFromFirestore;
   }
 
+  // Einzelnes Event anhand der ID auslesen
+  Future<Map<String, dynamic>?> getEventById(String eventId) async {
+    try {
+      // Dokument mit der spezifischen ID abrufen
+      final docSnapshot = await _eventsCollection.doc(eventId).get();
+
+      // Überprüfen, ob das Dokument existiert
+      if (docSnapshot.exists) {
+        return docSnapshot.data() as Map<String, dynamic>;
+      } else {
+        print("Event mit ID $eventId nicht gefunden.");
+        return null;
+      }
+    } catch (e) {
+      print("Fehler beim Abrufen des Events: $e");
+      return null;
+    }
+  }
+
   // *** LÖSCHEN ***
 
   // Einzelnes Event wieder löschen.
