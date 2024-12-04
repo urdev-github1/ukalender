@@ -12,6 +12,7 @@ class EventStorageFirestore {
 
   // Neu eingegebenes Event (über add_event_dialog.dart) in Firestore speichern
   Future<void> saveEventToFirestore({
+    required String id,
     required String title,
     required String body,
     required DateTime eventDateTime,
@@ -33,6 +34,7 @@ class EventStorageFirestore {
 
       // Zum Dokument zugehörige Felder.
       final eventData = {
+        'id': id,
         'title': title,
         'body': body,
         'notificationIds': notificationIds,
@@ -47,10 +49,8 @@ class EventStorageFirestore {
           'thirtyMinutesBefore': thirtyMinutesBefore.toIso8601String(),
       };
 
-      // Speichern der Daten in Cloud Firestore
-      // DocumentReference docRef = await _eventsCollection.add(eventData);
-      // String eventId = docRef.id;
-      await _eventsCollection.add(eventData);
+      // Dokument mit spezifischer ID speichern
+      await _eventsCollection.doc(id).set(eventData);
 
       print("Event erfolgreich gespeichert!");
     } catch (e) {

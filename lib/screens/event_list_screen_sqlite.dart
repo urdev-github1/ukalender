@@ -49,7 +49,7 @@ class _EventListScreenSqliteState extends State<EventListScreenSqlite> {
       ),
 
       // FutureBuilder, um alle Daten aus der lokalen DB zu laden.
-      body: FutureBuilder<List<EventSqlite>>(
+      body: FutureBuilder<List<EventSQLite>>(
         // Abruf der Daten in 'database_helper.dart'
         future: DatabaseHelper.instance.queryAllEvents(),
 

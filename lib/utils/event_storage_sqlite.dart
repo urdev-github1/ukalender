@@ -1,19 +1,17 @@
 import 'package:intl/intl.dart';
-import 'package:uuid/uuid.dart';
 import '../models/event_sqlite.dart';
 import '../utils/database_helper.dart';
 
 /// Verbindung nach Sqflite und Daten speichern
-class EventStorageSqflite {
-  //
+class EventStorageSQLite {
+  // Instanz der Klasse DatabaseHelper + Methode 'instance'
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
-  final Uuid _uuid = const Uuid();
 
   // *** SPEICHERN ***
 
-  // Neu eingegebenes Event (über add_event_dialog.dart) in Sqflite speichern
-  Future<void> saveEventToSqflite({
-    String? id, // ID kann optional sein
+  // Neu eingegebenes Event (über add_event_dialog.dart) in SQLite speichern
+  Future<void> saveEventToSQLite({
+    required String id,
     required String title,
     required String body,
     required DateTime eventDateTime,
@@ -33,12 +31,9 @@ class EventStorageSqflite {
       // Extrahiere nur die Uhrzeit aus eventTime
       String localTime = DateFormat('HH:mm').format(eventDateTime);
 
-      // ID generieren, da die Datenbank keinen automatisch generierten Primärschlüssel besitzt.
-      final eventId = id ?? _uuid.v4();
-
-      // Speichern der Daten in Sqflite
-      final event = EventSqlite(
-        id: eventId,
+      // Speichern der Daten in SQLite
+      final event = EventSQLite(
+        id: id,
         title: title,
         body: body,
         eventTime: eventTimeAtMidnight.toIso8601String(),
@@ -47,7 +42,7 @@ class EventStorageSqflite {
         twoHoursBefore: twoHoursBefore?.toIso8601String() ?? '',
         thirtyMinutesBefore: thirtyMinutesBefore?.toIso8601String() ?? '',
         notificationIds:
-            EventSqlite.notificationIdsToJson(notificationIds ?? []),
+            EventSQLite.notificationIdsToJson(notificationIds ?? []),
       );
 
       // Event in die Datenbank einfügen
@@ -61,8 +56,8 @@ class EventStorageSqflite {
 
   // *** AUSLESEN ***
 
-  Future<Map<DateTime, List<EventSqlite>>> loadEventsFromSqflite() async {
-    final Map<DateTime, List<EventSqlite>> eventsFromSqflite = {};
+  Future<Map<DateTime, List<EventSQLite>>> loadEventsFromSqflite() async {
+    final Map<DateTime, List<EventSQLite>> eventsFromSqflite = {};
     final events = await DatabaseHelper.instance.queryAllEvents();
 
     eventsFromSqflite.clear();

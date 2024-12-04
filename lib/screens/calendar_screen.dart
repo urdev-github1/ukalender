@@ -26,7 +26,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // Speichert die Ereignisse, die an einem bestimmten Tag stattfinden
   //late Map<DateTime, List<EventFirestore>> _events;
-  late Map<DateTime, List<EventSqlite>> _events;
+  late Map<DateTime, List<EventSQLite>> _events;
 
   // Speichert den aktuell ausgewählten Tag
   late DateTime _selectedDay;
@@ -71,7 +71,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
 
     // Abrufen aller Events aus der Datenbank
-    final List<EventSqlite> events =
+    final List<EventSQLite> events =
         await DatabaseHelper.instance.queryAllEvents();
 
     // Überprüfen, ob das Widget noch gemountet ist
@@ -108,7 +108,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   // Wenn ein Kalendertag dauerhaft angedrückt wurde.
-  List<EventSqlite> _getEventsForDay(DateTime day) {
+  List<EventSQLite> _getEventsForDay(DateTime day) {
     // Datum normalisieren (nur Jahr, Monat und Tag)
     final localDay = DateTime(day.year, day.month, day.day);
     return _events[localDay] ?? [];
@@ -131,7 +131,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   // Ein Kalendertag wurde dauerhaft angedrückt
   void _onDayLongPressed(DateTime selectedDay, DateTime focusedDay) {
     //List<EventFirestore> eventsForDay = _getEventsForDay(selectedDay);
-    List<EventSqlite> eventsForDay = _getEventsForDay(selectedDay);
+    List<EventSQLite> eventsForDay = _getEventsForDay(selectedDay);
 
     // Zeige alle Termine für den angeklickten Kalendertag
     showDialog(
@@ -211,14 +211,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
         // Firestore-Daten in ein EventSqflite-Objekt transformieren
-        EventSqlite event = EventSqlite(
-          id: doc.id, // Dokument-ID als Event-ID verwenden
+        EventSQLite event = EventSQLite(
+          id: doc.id, // Dokument-ID = Event-ID
           title: data['title'],
           body: data['body'],
           eventTime: data['eventTime'],
           localTime: data['localTime'],
           dayBefore: data.containsKey('dayBefore') ? data['dayBefore'] : '',
-          notificationIds: EventSqlite.notificationIdsToJson(
+          notificationIds: EventSQLite.notificationIdsToJson(
               List<int>.from(data['notificationIds'])),
           thirtyMinutesBefore: data.containsKey('thirtyMinutesBefore')
               ? data['thirtyMinutesBefore']

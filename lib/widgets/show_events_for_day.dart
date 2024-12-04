@@ -7,7 +7,7 @@ import 'package:intl/intl.dart'; // Zum Formatieren des Datums
 class ShowEventsForDay extends StatefulWidget {
   final DateTime selectedDay;
   //final List<EventFirestore> eventsForDay;
-  final List<EventSqlite>
+  final List<EventSQLite>
       eventsForDay; // Ändern von EventFirestore zu EventSqflite
 
   const ShowEventsForDay({

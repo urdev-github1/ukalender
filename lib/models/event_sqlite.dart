@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 /// Struktur der Event-Datenbank für die Termine
-class EventSqlite {
-  // Firestore-Dokument-ID
+class EventSQLite {
+  // Datesatz-ID
   final String id;
   // Titel des Events
   final String title;
@@ -22,7 +22,7 @@ class EventSqlite {
   final String dayBefore;
 
   // Der Konstruktor der 'Event-Klasse'
-  EventSqlite({
+  EventSQLite({
     required this.id,
     required this.title,
     required this.body,
@@ -50,8 +50,8 @@ class EventSqlite {
   }
 
   // Funktion zur Konvertierung einer Map in ein Event-Objekt
-  factory EventSqlite.fromMap(Map<String, dynamic> map) {
-    return EventSqlite(
+  factory EventSQLite.fromMap(Map<String, dynamic> map) {
+    return EventSQLite(
       id: map['id'],
       title: map['title'],
       body: map['body'],

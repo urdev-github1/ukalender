@@ -75,24 +75,24 @@ class DatabaseHelper {
   /// CRUD-Operationen:
 
   // Methode zum Einfügen eines Events in die Datenbank
-  Future<int> insertEvent(EventSqlite event) async {
+  Future<int> insertEvent(EventSQLite event) async {
     Database? db = await instance.database;
     return await db!.insert('events', event.toMap());
   }
 
   // Methode zum Abfragen aller Events aus der Datenbank
-  Future<List<EventSqlite>> queryAllEvents() async {
+  Future<List<EventSQLite>> queryAllEvents() async {
     Database? db = await instance.database;
     // Alle Dokumente aus der 'events'-Tabelle abfragen
     List<Map<String, dynamic>> eventMaps = await db!.query('events');
     // Liste von EventSqflite-Objekten aus den Maps erstellen
     return List.generate(eventMaps.length, (index) {
-      return EventSqlite.fromMap(eventMaps[index]);
+      return EventSQLite.fromMap(eventMaps[index]);
     });
   }
 
   // Methode zum Aktualisieren eines Events in der Datenbank
-  Future<int> updateEvent(EventSqlite event) async {
+  Future<int> updateEvent(EventSQLite event) async {
     Database? db = await instance.database;
     // Event in der 'events'-Tabelle aktualisieren und die Anzahl der
     // aktualisierten Zeilen zurückgeben
