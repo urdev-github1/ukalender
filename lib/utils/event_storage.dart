@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import '../utils/event_storage_firestore.dart';
 import '../utils/event_storage_sqlite.dart';
@@ -60,6 +59,19 @@ class EventStorage {
       }
     }
     return null;
+  }
+
+  //
+  Future<List<Map<String, dynamic>>> getAllEvents() async {
+    try {
+      final querySnapshot = await _firestoreStorage.getAllEvents();
+      return querySnapshot.docs
+          .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
+          .toList();
+    } catch (e) {
+      print("Fehler beim Abrufen aller Events: $e");
+      return [];
+    }
   }
 
   // Notification reaktivieren

@@ -134,6 +134,16 @@ class EventStorageFirestore {
     }
   }
 
+  //
+  Future<QuerySnapshot> getAllEvents() async {
+    try {
+      return await _eventsCollection.get();
+    } catch (e) {
+      print("Fehler beim Abrufen aller Events: $e");
+      rethrow;
+    }
+  }
+
   // *** LÖSCHEN ***
 
   // Einzelnes Event wieder löschen.

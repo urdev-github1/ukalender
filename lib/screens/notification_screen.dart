@@ -200,13 +200,44 @@ class _NotificationScreenState extends State<NotificationScreen> {
         },
       ),
 
-      // Reaktivieren von Notification
+      // // Manuelle Reaktivierung von Notification
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () async {
+      //     const eventId = "wYSeCsgfPSh3CGXeNK3c";
+
+      //     // Benachrichtigungen für das Event wiederherstellen
+      //     await _eventStorage.restoreNotifications(eventId);
+
+      //     // Feedback für den Benutzer
+      //     if (context.mounted) {
+      //       ScaffoldMessenger.of(context).showSnackBar(
+      //         const SnackBar(
+      //             content: Text('Benachrichtigungen wiederhergestellt!')),
+      //       );
+      //     }
+      //   },
+      //   tooltip: 'Benachrichtigungen wiederherstellen',
+      //   child: const Icon(Icons.restore),
+      // ),
+
+      //
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          const eventId = "wYSeCsgfPSh3CGXeNK3c";
+          // Alle Events auslesen und Benachrichtigungen wiederherstellen
+          final events = await _eventStorage.getAllEvents();
+          if (events.isEmpty) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Keine Events gefunden!')),
+              );
+            }
+            return;
+          }
 
-          // Benachrichtigungen für das Event wiederherstellen
-          await _eventStorage.restoreNotifications(eventId);
+          for (final event in events) {
+            final eventId = event['id'];
+            await _eventStorage.restoreNotifications(eventId);
+          }
 
           // Feedback für den Benutzer
           if (context.mounted) {
