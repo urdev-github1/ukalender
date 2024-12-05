@@ -200,20 +200,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
         },
       ),
 
-      //
+      // Reaktivieren von Notification
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          const eventId = "wYSeCsgfPSh3CGXeNK3c"; // ID dynamisch ermitteln
-          //final eventStorage = EventStorageFirestore();
+          const eventId = "wYSeCsgfPSh3CGXeNK3c";
 
           // Benachrichtigungen für das Event wiederherstellen
           await _eventStorage.restoreNotifications(eventId);
 
           // Feedback für den Benutzer
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Benachrichtigungen wiederhergestellt!')),
-          );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Benachrichtigungen wiederhergestellt!')),
+            );
+          }
         },
         tooltip: 'Benachrichtigungen wiederherstellen',
         child: const Icon(Icons.restore),

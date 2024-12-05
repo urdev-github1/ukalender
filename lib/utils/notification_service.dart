@@ -118,8 +118,10 @@ class NotificationService {
         body: body,
         scheduledTime: scheduledTime,
       );
+      print("Notification $id für $scheduledTime neu geplant.");
     } else {
-      print("Notification-Zeitpunkt liegt in der Vergangenheit. Keine Aktion.");
+      print(
+          "Notification $id konnte nicht geplant werden. Zeitpunkt ($scheduledTime) liegt in der Vergangenheit.");
     }
   }
 
