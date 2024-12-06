@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:ukalender/utils/event_storage_firestore.dart';
+import '../utils/event_storage_firestore.dart';
+import '../utils/notification_restoration_service.dart';
 import '../utils/notification_service.dart';
 import '../utils/event_storage.dart';
 
@@ -16,7 +17,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   late Future<List<PendingNotificationRequest>> _pendingNotifications;
 
   // Instanz der Klasse NotificationService
-  final EventStorage _eventStorage = EventStorage();
+  //final EventStorage _eventStorage = EventStorage();
 
   @override
   void initState() {
@@ -200,25 +201,87 @@ class _NotificationScreenState extends State<NotificationScreen> {
         },
       ),
 
-      // Reaktivieren von Notification
+      // 1. Variante einzelne Notification
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          const eventId = "wYSeCsgfPSh3CGXeNK3c";
+          const String eventId = "wYSeCsgfPSh3CGXeNK3c";
 
-          // Benachrichtigungen für das Event wiederherstellen
-          await _eventStorage.restoreNotifications(eventId);
+          try {
+            //final eventStorageFirestore = EventStorageFirestore();
+            final notificationService = NotificationService();
+            final restorationService = NotificationRestorationService(
+                eventStorage, notificationService);
 
-          // Feedback für den Benutzer
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Benachrichtigungen wiederhergestellt!')),
-            );
+            // Benachrichtigungen für das spezifische Event wiederherstellen
+            await restorationService.restoreNotificationsForEvent(eventId);
+
+            // Feedback für den Benutzer
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      'Benachrichtigungen für das Event wiederhergestellt!'),
+                ),
+              );
+            }
+          } catch (e) {
+            // Fehler behandeln
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Fehler: ${e.toString()}'),
+                ),
+              );
+            }
           }
         },
-        tooltip: 'Benachrichtigungen wiederherstellen',
         child: const Icon(Icons.restore),
       ),
+
+      // // 2. Variante alle Notification
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () async {
+      //     // Instanz von NotificationRestorationService
+      //     final eventStorage = EventStorage();
+      //     final notificationService = NotificationService();
+      //     final restorationService =
+      //         NotificationRestorationService(eventStorage, notificationService);
+
+      //     // Benachrichtigungen für alle Events wiederherstellen
+      //     await restorationService.restoreDeletedNotifications();
+
+      //     // Feedback für den Benutzer
+      //     if (context.mounted) {
+      //       ScaffoldMessenger.of(context).showSnackBar(
+      //         const SnackBar(
+      //           content: Text('Benachrichtigungen wiederhergestellt!'),
+      //         ),
+      //       );
+      //     }
+      //   },
+      //   tooltip: 'Benachrichtigungen wiederherstellen',
+      //   child: const Icon(Icons.restore),
+      // ),
+
+      // // Reaktivieren von Notification
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () async {
+      //     const eventId = "wYSeCsgfPSh3CGXeNK3c";
+
+      //     // Benachrichtigungen für das Event wiederherstellen
+      //     await _eventStorage.restoreNotifications(eventId);
+
+      //     // Feedback für den Benutzer
+      //     if (context.mounted) {
+      //       ScaffoldMessenger.of(context).showSnackBar(
+      //         const SnackBar(
+      //             content: Text('Benachrichtigungen wiederhergestellt!')),
+      //       );
+      //     }
+      //   },
+      //   tooltip: 'Benachrichtigungen wiederherstellen',
+      //   child: const Icon(Icons.restore),
+      // ),
     );
   }
 }

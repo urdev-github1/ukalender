@@ -103,6 +103,14 @@ class NotificationService {
     );
   }
 
+  // Überprüfen, ob eine Benachrichtigung noch aktiv ist
+  Future<bool> isNotificationScheduled(int id) async {
+    final List<PendingNotificationRequest> pendingNotifications =
+        await _localNotificationsPlugin.pendingNotificationRequests();
+
+    return pendingNotifications.any((notification) => notification.id == id);
+  }
+
   // Methode zur Reaktivierung einer Notification
   Future<void> reactivateNotification({
     required int id,
