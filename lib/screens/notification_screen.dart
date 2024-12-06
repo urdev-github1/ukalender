@@ -3,7 +3,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../utils/event_storage_firestore.dart';
 import '../utils/notification_restoration_service.dart';
 import '../utils/notification_service.dart';
-import '../utils/event_storage.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -15,9 +14,6 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   final NotificationService _notificationService = NotificationService();
   late Future<List<PendingNotificationRequest>> _pendingNotifications;
-
-  // Instanz der Klasse NotificationService
-  //final EventStorage _eventStorage = EventStorage();
 
   @override
   void initState() {
@@ -201,22 +197,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
         },
       ),
 
-      // 1. Variante einzelne Notification
+      // Variante einzelne Notification reaktivieren
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          const String eventId = "wYSeCsgfPSh3CGXeNK3c";
+          // ID des Events speichert, für das die Benachrichtigungen wiederhergestellt werden sollen.
+          const String eventId = "QsqTxxuJ4SRyn7Igr8oQ";
 
           try {
-            //final eventStorageFirestore = EventStorageFirestore();
+            // Instanz des NotificationService
             final notificationService = NotificationService();
+            // Instanz des NotificationRestorationService, der den EventStorage
+            // und den NotificationService als Parameter verwendet
             final restorationService = NotificationRestorationService(
                 eventStorage, notificationService);
 
-            // Benachrichtigungen für das spezifische Event wiederherstellen
+            // Benachrichtigungen für ein einzelnes Event wieder herstellen
             await restorationService.restoreNotificationsForEvent(eventId);
 
-            // Feedback für den Benutzer
+            // Überprüft, ob der Context noch gültig ist
             if (context.mounted) {
+              // SnackBar-Meldung
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text(
@@ -225,7 +225,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               );
             }
           } catch (e) {
-            // Fehler behandeln
+            // Falls ein Fehler auftritt
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -235,10 +235,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
             }
           }
         },
+        tooltip: 'Benachrichtigungen wiederherstellen',
         child: const Icon(Icons.restore),
       ),
 
-      // // 2. Variante alle Notification
+      // // Variante alle Notification
       // floatingActionButton: FloatingActionButton(
       //   onPressed: () async {
       //     // Instanz von NotificationRestorationService
