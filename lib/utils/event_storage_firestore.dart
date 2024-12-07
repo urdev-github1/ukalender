@@ -165,6 +165,22 @@ class EventStorageFirestore {
     }
   }
 
+  // // KURZSCHREIBWEISE
+  // Future<List<Map<String, dynamic>>> getAllEvents() async {
+  //   try {
+  //     final querySnapshot = await _eventsCollection.get();
+  //     return querySnapshot.docs.map((doc) {
+  //       return {
+  //         'id': doc.id,
+  //         ...doc.data() as Map<String, dynamic>,
+  //       };
+  //     }).toList();
+  //   } catch (e) {
+  //     print("Fehler beim Abrufen aller Events: $e");
+  //     return [];
+  //   }
+  // }
+
   // *** LÖSCHEN ***
 
   // Einzelnes Event wieder löschen.

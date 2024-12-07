@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../utils/event_storage_firestore.dart';
 import '../utils/notification_service.dart';
@@ -23,12 +22,11 @@ class NotificationRestorationService {
   // Helfermethode zur Kombination von Datum und Uhrzeit
   DateTime _combineDateWithLocalTime(DateTime date, String localTime) {
     try {
-      final int hour = int.parse(localTime.split(':')[0]);
-      final int minute = int.parse(localTime.split(':')[1]);
-      return DateTime(date.year, date.month, date.day, hour, minute);
+      // Stunden:Minuten
+      final parts = localTime.split(':').map(int.parse).toList();
+      return DateTime(date.year, date.month, date.day, parts[0], parts[1]);
     } catch (e) {
-      print("Fehler bei der Zeitkombination: $e");
-      throw Exception("Ungültiges Zeitformat: $localTime");
+      throw FormatException("Ungültiges Zeitformat: $localTime");
     }
   }
 
@@ -39,64 +37,46 @@ class NotificationRestorationService {
       final eventData = await eventStorageFirestore.getEventById(eventId);
 
       // Überprüfen, ob die Event-Daten vorhanden sind
-      if (eventData == null) {
-        print("Event mit ID $eventId konnte nicht gefunden werden.");
-        throw Exception("Event-Daten nicht verfügbar.");
-      }
+      if (eventData == null) throw Exception("Event-Daten nicht verfügbar");
 
       // Extrahieren des Titels des Events aus den Event-Daten
       final String title = eventData['title'];
 
       // Datum aus den Event-Daten als Datums-Objekt
-      final DateTime eventDate = eventData['eventTime'] is Timestamp
-          ? (eventData['eventTime'] as Timestamp).toDate()
-          : DateTime.parse(eventData['eventTime'] as String);
+      final DateTime eventDate =
+          DateTime.parse(eventData['eventTime'] as String);
 
-      // Uhrzeit aus den Event-Daten
-      final String localTime =
-          eventData['localTime'] as String; // Format: "HH:mm"
+      // Uhrzeit ("HH:mm") aus den Event-Daten
+      final String localTime = eventData['localTime'] as String;
 
-      // Uhrzeit in Stunden und Minuten aufteilen
-      final int hour = int.parse(localTime.split(':')[0]);
-      final int minute = int.parse(localTime.split(':')[1]);
+      // Datum + Uhrzeit
+      final DateTime eventTime =
+          _combineDateWithLocalTime(eventDate, localTime);
 
-      // Neues eventTime-Objekt
-      final DateTime eventTime = DateTime(
-        eventDate.year,
-        eventDate.month,
-        eventDate.day,
-        hour,
-        minute,
-      );
-
-      // Extrahierung der geplanten Benachrichtigungszeiten aus den Event-Daten
+      // Einen Tag vor dem Termin
       final DateTime? dayBefore = eventData['dayBefore'] != null
           ? _combineDateWithLocalTime(
-              eventData['dayBefore'] is Timestamp
-                  ? (eventData['dayBefore'] as Timestamp).toDate()
-                  : DateTime.parse(eventData['dayBefore'] as String),
+              DateTime.parse(eventData['dayBefore'] as String),
               localTime,
             )
           : null;
 
+      // 2 Std. vor dem Termin
       final DateTime? twoHoursBefore = eventData['twoHoursBefore'] != null
           ? _combineDateWithLocalTime(
-              eventData['twoHoursBefore'] is Timestamp
-                  ? (eventData['twoHoursBefore'] as Timestamp).toDate()
-                  : DateTime.parse(eventData['twoHoursBefore'] as String),
+              DateTime.parse(eventData['twoHoursBefore'] as String),
               localTime,
             )
           : null;
 
-      final DateTime? thirtyMinutesBefore = eventData['thirtyMinutesBefore'] !=
-              null
-          ? _combineDateWithLocalTime(
-              eventData['thirtyMinutesBefore'] is Timestamp
-                  ? (eventData['thirtyMinutesBefore'] as Timestamp).toDate()
-                  : DateTime.parse(eventData['thirtyMinutesBefore'] as String),
-              localTime,
-            )
-          : null;
+      // 30 Min. vor dem Termin
+      final DateTime? thirtyMinutesBefore =
+          eventData['thirtyMinutesBefore'] != null
+              ? _combineDateWithLocalTime(
+                  DateTime.parse(eventData['thirtyMinutesBefore'] as String),
+                  localTime,
+                )
+              : null;
 
       // Planen der Benachrichtigungen, falls die geplanten Zeiten in der Zukunft liegen
       if (dayBefore != null && dayBefore.isAfter(DateTime.now())) {

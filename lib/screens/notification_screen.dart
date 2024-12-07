@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../utils/event_storage_firestore.dart';
@@ -207,7 +208,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
             // Alle Events abrufen
             final allEvents = await eventStorage.getAllEvents();
 
-            // Benachrichtigungen für alle Events wiederherstellen
+            // Alle Events nach zeitlicher Reihenfolge ihrer Benachrichtigungen sortieren
+            allEvents.sort((a, b) {
+              final aTime = DateTime.parse(a['eventTime']);
+              final bTime = DateTime.parse(b['eventTime']);
+              return aTime.compareTo(bTime);
+            });
+
+            // Benachrichtigungen für alle sortierten Events wiederherstellen
             for (final event in allEvents) {
               final eventId = event['id'] as String;
               await restorationService.restoreNotificationsForEvent(eventId);
