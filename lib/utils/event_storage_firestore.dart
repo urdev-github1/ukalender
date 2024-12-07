@@ -134,6 +134,37 @@ class EventStorageFirestore {
     }
   }
 
+  // Eine Liste von Maps, die jeweils ein Event repräsentiert.
+  Future<List<Map<String, dynamic>>> getAllEvents() async {
+    try {
+      // Gesamte Dokumentensammlung aus Firestore abzurufen.
+      final querySnapshot = await _eventsCollection.get();
+
+      // Konvertiere die Liste der Dokumente in eine Liste von Maps.
+      return querySnapshot.docs.map((doc) {
+        // Hole die Daten des aktuellen Dokuments als Map ab.
+        final data = doc.data() as Map<String, dynamic>;
+        // Initialisiere eine neue Map namens event,
+        // um die Daten des aktuellen Events zu speichern.
+        final Map<String, dynamic> event = {
+          'id': doc.id // Füge die ID des Dokuments als 'id'-Feld hinzu.
+        }; // Neues Map initialisieren
+
+        // Durchlaufe jedes Feld im Dokument und füge es zur event-Map hinzu.
+        data.forEach((key, value) {
+          // Füge den Schlüssel-Wert-Paar zu der event-Map hinzu.
+          event[key] = value;
+        });
+        // Gib die fertige event-Map zurück.
+        return event;
+        // Konvertiere das Iterable in eine Liste von Maps.
+      }).toList();
+    } catch (e) {
+      print("Fehler beim Abrufen aller Events: $e");
+      return [];
+    }
+  }
+
   // *** LÖSCHEN ***
 
   // Einzelnes Event wieder löschen.

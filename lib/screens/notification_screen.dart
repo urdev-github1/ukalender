@@ -197,35 +197,33 @@ class _NotificationScreenState extends State<NotificationScreen> {
         },
       ),
 
-      // Variante einzelne Notification reaktivieren
+      // Alle Notification reaktivieren
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // ID des Events speichert, für das die Benachrichtigungen wiederhergestellt werden sollen.
-          const String eventId = "QsqTxxuJ4SRyn7Igr8oQ";
-
           try {
-            // Instanz des NotificationService
-            final notificationService = NotificationService();
-            // Instanz des NotificationRestorationService, der den EventStorage
-            // und den NotificationService als Parameter verwendet
             final restorationService = NotificationRestorationService(
-                eventStorage, notificationService);
+                eventStorage, _notificationService);
 
-            // Benachrichtigungen für ein einzelnes Event wieder herstellen
-            await restorationService.restoreNotificationsForEvent(eventId);
+            // Alle Events abrufen
+            final allEvents = await eventStorage.getAllEvents();
+
+            // Benachrichtigungen für alle Events wiederherstellen
+            for (final event in allEvents) {
+              final eventId = event['id'] as String;
+              await restorationService.restoreNotificationsForEvent(eventId);
+            }
 
             // Überprüft, ob der Context noch gültig ist
             if (context.mounted) {
-              // SnackBar-Meldung
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text(
-                      'Benachrichtigungen für das Event wiederhergestellt!'),
+                      'Alle Benachrichtigungen erfolgreich wiederhergestellt!'),
                 ),
               );
             }
           } catch (e) {
-            // Falls ein Fehler auftritt
+            // Fehler behandeln
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -235,54 +233,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
             }
           }
         },
-        tooltip: 'Benachrichtigungen wiederherstellen',
+        tooltip: 'Alle Benachrichtigungen wiederherstellen',
         child: const Icon(Icons.restore),
       ),
-
-      // // Variante alle Notification
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () async {
-      //     // Instanz von NotificationRestorationService
-      //     final eventStorage = EventStorage();
-      //     final notificationService = NotificationService();
-      //     final restorationService =
-      //         NotificationRestorationService(eventStorage, notificationService);
-
-      //     // Benachrichtigungen für alle Events wiederherstellen
-      //     await restorationService.restoreDeletedNotifications();
-
-      //     // Feedback für den Benutzer
-      //     if (context.mounted) {
-      //       ScaffoldMessenger.of(context).showSnackBar(
-      //         const SnackBar(
-      //           content: Text('Benachrichtigungen wiederhergestellt!'),
-      //         ),
-      //       );
-      //     }
-      //   },
-      //   tooltip: 'Benachrichtigungen wiederherstellen',
-      //   child: const Icon(Icons.restore),
-      // ),
-
-      // // Reaktivieren von Notification
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () async {
-      //     const eventId = "wYSeCsgfPSh3CGXeNK3c";
-
-      //     // Benachrichtigungen für das Event wiederherstellen
-      //     await _eventStorage.restoreNotifications(eventId);
-
-      //     // Feedback für den Benutzer
-      //     if (context.mounted) {
-      //       ScaffoldMessenger.of(context).showSnackBar(
-      //         const SnackBar(
-      //             content: Text('Benachrichtigungen wiederhergestellt!')),
-      //       );
-      //     }
-      //   },
-      //   tooltip: 'Benachrichtigungen wiederherstellen',
-      //   child: const Icon(Icons.restore),
-      // ),
     );
   }
 }
